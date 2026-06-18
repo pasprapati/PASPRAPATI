@@ -737,6 +737,51 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
   margin-top:22px;
 }
 
+/* RIWAYAT DI HALAMAN REGISTRASI */
+.register-history-box{
+  margin-top:18px;
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:18px;
+  padding:14px;
+  max-height:220px;
+  overflow:auto;
+}
+.register-history-box h3{
+  margin:0 0 10px;
+  font-size:16px;
+  color:#075985;
+}
+.register-history-box table{
+  min-width:520px;
+  margin-top:0;
+}
+.register-history-box th,.register-history-box td{
+  font-size:12px;
+  padding:9px;
+}
+.absen-percent-card{
+  margin:14px 0;
+  padding:18px;
+  border-radius:20px;
+  background:linear-gradient(135deg,#e0f2fe,#f8fafc);
+  border:1px solid #bae6fd;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:14px;
+}
+.absen-percent-card .percent-number{
+  font-size:34px;
+  font-weight:900;
+  color:#0369a1;
+}
+.absen-percent-card .percent-desc{
+  color:#64748b;
+  font-size:13px;
+  line-height:1.45;
+}
+
 </style>
 </head>
 
@@ -778,14 +823,19 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
     <input type="text" id="regUser" placeholder="Buat username">
     <input type="text" id="regFullName" placeholder="Nama lengkap">
     <input type="password" id="regPass" placeholder="Buat password">
-    <select id="regRole">
+    <select id="regRole" onchange="updateRegisterRFIDPlaceholder()">
       <option value="siswa">Siswa</option>
       <option value="guru">Guru</option>
       <option value="bph">BPH</option>
     </select>
-    <input type="text" id="regLoginRFID" placeholder="RFID login Guru/BPH, khusus jika role Guru atau BPH">
+    <input type="text" id="regLoginRFID" placeholder="UID RFID siswa untuk absen">
     <button onclick="registerUser()">Daftar</button>
     <button class="btn-red" onclick="showLogin()">Kembali</button>
+
+    <div class="register-history-box">
+      <h3>Riwayat Registrasi</h3>
+      <div id="registerHistoryPreview">Belum ada riwayat registrasi.</div>
+    </div>
   </div>
 </div>
 
@@ -889,6 +939,13 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
         <div class="grid">
           <div class="card">
             <h2>Student Progress</h2>
+            <div class="absen-percent-card">
+              <div>
+                <b>Persentase Absen Hari Ini</b>
+                <div class="percent-desc">Diambil dari data tap Absen RFID berdasarkan RFID siswa dari registrasi.</div>
+              </div>
+              <div class="percent-number" id="persenAbsenDashboard">0%</div>
+            </div>
             <div class="progress-box">
               <div class="progress-row"><div class="progress-label">Data Siswa</div><div class="progress-track"><div id="barSiswa" class="progress-fill"></div></div></div>
               <div class="progress-row"><div class="progress-label">Absensi</div><div class="progress-track"><div id="barAbsen" class="progress-fill"></div></div></div>
@@ -898,6 +955,7 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
                 <tr><th>Data</th><th>Total</th></tr>
                 <tr><td>Data Siswa</td><td id="totalSiswa">0</td></tr>
                 <tr><td>Absensi</td><td id="totalAbsen">0</td></tr>
+                <tr><td>Persentase Absen Hari Ini</td><td id="persenAbsenTabel">0%</td></tr>
                 <tr><td>Izin Sakit</td><td id="totalSakit">0</td></tr>
                 <tr><td>Izin Lainnya</td><td id="totalIzin">0</td></tr>
               </table>
@@ -1257,6 +1315,7 @@ function refreshAllViews(){
   try{ renderAcc(); }catch(e){}
   try{ renderData(); }catch(e){}
   try{ renderHistoriRegistrasi(); }catch(e){}
+  try{ renderRegisterHistoryPreview(); }catch(e){}
 }
 
 async function loadCloudData(){
@@ -1400,59 +1459,132 @@ function focusAbsenRFID(){setTimeout(()=>document.getElementById("rfidAbsen").fo
 function showRegister(){
   document.getElementById("loginPage").classList.add("hidden");
   document.getElementById("registerPage").classList.remove("hidden");
+  updateRegisterRFIDPlaceholder();
+  renderRegisterHistoryPreview();
 }
 function showLogin(){
   document.getElementById("registerPage").classList.add("hidden");
   document.getElementById("loginPage").classList.remove("hidden");
   focusLoginRFID();
 }
+
+function updateRegisterRFIDPlaceholder(){
+  const role = document.getElementById("regRole")?.value || "siswa";
+  const input = document.getElementById("regLoginRFID");
+  if(!input) return;
+  input.placeholder = role === "siswa" ? "UID RFID siswa untuk absen" : "UID RFID login Guru/BPH";
+}
+
+function renderRegisterHistoryPreview(){
+  const box = document.getElementById("registerHistoryPreview");
+  if(!box) return;
+
+  const data = [...historiRegistrasi].sort((a,b)=>Number(b.id||0)-Number(a.id||0)).slice(0,8);
+
+  if(data.length === 0){
+    box.innerHTML = `<div style="color:#64748b;text-align:center;padding:10px;">Belum ada riwayat registrasi.</div>`;
+    return;
+  }
+
+  box.innerHTML = `
+    <table>
+      <tr>
+        <th>Nama</th>
+        <th>Role</th>
+        <th>RFID</th>
+        <th>Tanggal</th>
+      </tr>
+      ${data.map(h=>`
+        <tr>
+          <td>${h.fullName || "-"}</td>
+          <td>${h.role || "-"}</td>
+          <td>${h.rfidSiswa || h.loginRFID || "-"}</td>
+          <td>${h.tanggalRegistrasi || "-"}</td>
+        </tr>
+      `).join("")}
+    </table>
+  `;
+}
+
 async function registerUser(){
   await ensureCloudLoaded();
   const username=document.getElementById("regUser").value.trim();
   const fullName=document.getElementById("regFullName").value.trim();
   const password=document.getElementById("regPass").value.trim();
   const role=document.getElementById("regRole").value;
-  const loginRFID=document.getElementById("regLoginRFID").value.trim();
+  const inputRFID=document.getElementById("regLoginRFID").value.trim();
 
   if(!username || !fullName || !password){
     alert("Username, nama lengkap, dan password wajib diisi");
+    return;
+  }
+  if(!inputRFID){
+    alert(role === "siswa" ? "UID RFID siswa wajib diisi untuk absen" : "RFID login Guru/BPH wajib diisi");
     return;
   }
   if(users.some(u=>u.username===username)){
     alert("Username sudah terdaftar");
     return;
   }
-  if((role==="guru" || role==="bph") && !loginRFID){
-    alert("RFID login Guru/BPH wajib diisi");
-    return;
-  }
-  if(loginRFID && users.some(u=>String(u.loginRFID||"").trim()===loginRFID)){
-    alert("RFID login sudah terdaftar");
+
+  const rfidDipakaiUser = users.some(u=>String(u.loginRFID||"").trim()===inputRFID || String(u.rfidSiswa||"").trim()===inputRFID);
+  const rfidDipakaiSiswa = siswa.some(s=>String(s.rfid||"").trim()===inputRFID);
+  if(rfidDipakaiUser || rfidDipakaiSiswa){
+    alert("RFID sudah terdaftar");
     return;
   }
 
+  const tanggalRegistrasi = new Date().toLocaleString("id-ID");
   const akunBaru={
     username,
     fullName,
     password,
     role,
-    loginRFID:(role==="guru" || role==="bph")?loginRFID:"",
-    tanggalRegistrasi:new Date().toLocaleString("id-ID")
+    loginRFID:(role==="guru" || role==="bph") ? inputRFID : "",
+    rfidSiswa: role==="siswa" ? inputRFID : "",
+    tanggalRegistrasi
   };
 
   users.push(akunBaru);
+
+  /* Kalau role siswa, otomatis masuk ke Data Siswa.
+     Jadi Absen RFID langsung membaca data dari registrasi, tidak perlu input ulang di menu Data Siswa. */
+  if(role === "siswa"){
+    siswa.push({
+      id:Date.now(),
+      username,
+      nama:fullName,
+      jabatan:"Anggota",
+      tingkatan:"-",
+      rfid:inputRFID,
+      foto:"",
+      ramu:"",
+      rakit:"",
+      terap:"",
+      kegiatan:"",
+      garuda:"",
+      tanggalInput:tanggalRegistrasi,
+      sumber:"Registrasi Akun"
+    });
+  }
 
   historiRegistrasi.push({
     id:Date.now(),
     username,
     fullName,
     role,
-    loginRFID:(role==="guru" || role==="bph")?loginRFID:"",
-    tanggalRegistrasi:akunBaru.tanggalRegistrasi
+    loginRFID:(role==="guru" || role==="bph") ? inputRFID : "",
+    rfidSiswa: role==="siswa" ? inputRFID : "",
+    tanggalRegistrasi
   });
 
   saveUsers();
   saveAll();
+  updateDashboard();
+  renderChartDashboard();
+  renderHistoriRegistrasi();
+  renderRegisterHistoryPreview();
+  renderListSiswa();
 
   document.getElementById("regUser").value="";
   document.getElementById("regFullName").value="";
@@ -1460,8 +1592,9 @@ async function registerUser(){
   document.getElementById("regLoginRFID").value="";
 
   alert("Registrasi berhasil sebagai "+role);
-  showLogin();
+  renderRegisterHistoryPreview();
 }
+
 async function login(){
   await ensureCloudLoaded();
   const u=document.getElementById("loginUser").value.trim();
@@ -1828,7 +1961,25 @@ function absenRFID(){
 
   absenLock=true;
 
-  const dataSiswa=siswa.find(s=>String(s.rfid).trim()===rfid);
+  let dataSiswa=siswa.find(s=>String(s.rfid).trim()===rfid);
+
+  /* Fallback: kalau data siswa belum masuk array siswa, ambil dari registrasi akun siswa */
+  if(!dataSiswa){
+    const akunSiswa = users.find(u => u.role === "siswa" && String(u.rfidSiswa || "").trim() === rfid);
+    if(akunSiswa){
+      dataSiswa = {
+        id:akunSiswa.id || Date.now(),
+        username:akunSiswa.username,
+        nama:akunSiswa.fullName || akunSiswa.username,
+        jabatan:"Anggota",
+        tingkatan:"-",
+        rfid:rfid,
+        sumber:"Registrasi Akun"
+      };
+      siswa.push(dataSiswa);
+      saveAll();
+    }
+  }
 
   if(!dataSiswa){
     showError("RFID tidak terdaftar");
@@ -2191,7 +2342,7 @@ function renderChartDashboard(){
     }
   });
 
-  const hadirPercent = siswa.length ? Math.min(100, Math.round((absensi.length / siswa.length) * 100)) : 0;
+  const hadirPercent = getPersentaseAbsenHariIni();
   const totalPengajuan = sakit.length + izin.length;
   const totalDisetujui = [...sakit, ...izin].filter(x => x.status === "Disetujui").length;
   const izinPercent = totalPengajuan ? Math.round((totalDisetujui / totalPengajuan) * 100) : 0;
@@ -2207,8 +2358,31 @@ function renderChartDashboard(){
   if(izinRing) izinRing.style.setProperty("--value", izinPercent);
 }
 
+function getTanggalHariIni(){
+  return new Date().toLocaleDateString("id-ID");
+}
+
+function getAbsensiHariIni(){
+  const tanggal = getTanggalHariIni();
+  return absensi.filter(a => a.tanggal === tanggal && a.masuk);
+}
+
+function getPersentaseAbsenHariIni(){
+  const totalSiswa = siswa.length;
+  if(!totalSiswa) return 0;
+
+  const hadirUnik = new Set(
+    getAbsensiHariIni()
+      .map(a => String(a.rfid || a.nama || "").trim())
+      .filter(Boolean)
+  ).size;
+
+  return Math.min(100, Math.round((hadirUnik / totalSiswa) * 100));
+}
+
 function updateDashboard(){
   const totalSiswa=siswa.length,totalAbsen=absensi.length,totalSakit=sakit.length,totalIzin=izin.length;
+  const persenAbsen = getPersentaseAbsenHariIni();
 
   if(document.getElementById("totalSiswa")){
     document.getElementById("totalSiswa").innerText=totalSiswa;
@@ -2216,12 +2390,18 @@ function updateDashboard(){
     document.getElementById("totalSakit").innerText=totalSakit;
     document.getElementById("totalIzin").innerText=totalIzin;
 
+    const persenBox = document.getElementById("persenAbsenDashboard");
+    const persenTable = document.getElementById("persenAbsenTabel");
+    if(persenBox) persenBox.innerText = persenAbsen + "%";
+    if(persenTable) persenTable.innerText = persenAbsen + "%";
+
     document.getElementById("barSiswa").style.width=Math.min(totalSiswa*10,100)+"%";
-    document.getElementById("barAbsen").style.width=Math.min(totalAbsen*10,100)+"%";
+    document.getElementById("barAbsen").style.width=persenAbsen+"%";
     document.getElementById("barSakit").style.width=Math.min(totalSakit*10,100)+"%";
     document.getElementById("barIzin").style.width=Math.min(totalIzin*10,100)+"%";
   }
 }
+
 
 function renderStatusIzinSiswa(){
   const box = document.getElementById("statusIzinSiswa");
@@ -2337,7 +2517,7 @@ function renderHistoriRegistrasi(){
           <th>Nama Lengkap</th>
           <th>Username</th>
           <th>Role</th>
-          <th>RFID Guru</th>
+          <th>RFID</th>
           <th>Tanggal Registrasi</th>
         </tr>
         ${data.map(h=>`
@@ -2345,7 +2525,7 @@ function renderHistoriRegistrasi(){
             <td>${h.fullName || "-"}</td>
             <td>${h.username || "-"}</td>
             <td>${h.role || "-"}</td>
-            <td>${h.loginRFID || "-"}</td>
+            <td>${h.rfidSiswa || h.loginRFID || "-"}</td>
             <td>${h.tanggalRegistrasi || "-"}</td>
           </tr>
         `).join("")}
