@@ -755,15 +755,16 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
   <div class="login-card">
     <img src="pasprapatii.png" class="login-logo" onerror="this.style.display='none'">
     <h2>Login PASPRAPATI</h2>
+    <p style="text-align:center;color:#64748b;margin-top:-8px;">Guru, BPH, dan siswa bisa login manual pakai username & password.</p>
 
     <input type="text" id="loginUser" placeholder="Username">
     <input type="password" id="loginPass" placeholder="Password">
-    <button onclick="login()" class="btn-blue" style="width:100%;margin-bottom:12px;">Login Siswa</button>
+    <button onclick="login()" class="btn-blue" style="width:100%;margin-bottom:12px;">Login Manual Siswa / Guru / BPH</button>
 
     <div class="rfid-login-box" onclick="focusLoginRFID()">
       <div class="rfid-icon">📡</div>
-      <h3>Tap RFID Guru</h3>
-      <p>Tempel kartu guru untuk login otomatis</p>
+      <h3>Tap RFID Guru / BPH</h3>
+      <p>Tempel kartu Guru/BPH untuk login otomatis</p>
       <input type="text" id="loginRFID" class="rfid-hidden-input" autocomplete="off" autofocus>
     </div>
 
@@ -851,7 +852,7 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
             <h1>Selamat Datang, <span id="welcomeName">User</span></h1>
             <p>Sistem Absensi, Perizinan, dan Administrasi Anggota Pramuka Berbasis RFID.</p>
           </div>
-          <img src="/Users/user/Documents/Pasprapati/Pramuka.png" class="hero-logo" onerror="this.style.display='none'">
+          <img src="pasprapatii.png" class="hero-logo" onerror="this.style.display='none'">
         </div>
 
         <div class="card chart-card">
@@ -1343,8 +1344,20 @@ function registerUser(){
 function login(){
   const u=document.getElementById("loginUser").value.trim();
   const p=document.getElementById("loginPass").value.trim();
+
+  if(!u || !p){
+    alert("Username dan password wajib diisi");
+    return;
+  }
+
   const found=users.find(user=>user.username===u && user.password===p);
-  if(!found){alert("Username atau password salah");return}
+
+  if(!found){
+    alert("Username atau password salah");
+    return;
+  }
+
+  // Login manual berlaku untuk siswa, guru, dan BPH
   masukAplikasi(found);
 }
 function loginDenganRFID(uid){
@@ -1354,7 +1367,7 @@ function loginDenganRFID(uid){
   const guru = users.find(user => (user.role==="guru" || user.role==="bph") && String(user.loginRFID || "").trim() === String(uid).trim());
 
   if(!guru){
-    alert("RFID guru tidak terdaftar");
+    alert("RFID Guru/BPH tidak terdaftar");
     document.getElementById("loginRFID").value="";
     loginLock=false;
     focusLoginRFID();
