@@ -1139,21 +1139,20 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
                 <tr><td>Izin Lainnya</td><td id="totalIzin">0</td></tr>
               </table>
               <div id="nilaiDashboardSection">
-
-              <h3 style="margin-top:22px;">Nilai Per Semester</h3>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;">
-                <select id="filterNilaiKelas" onchange="renderStudentNilaiProgress()">
-                  <option value="VII">Kelas VII</option>
-                  <option value="VIII">Kelas VIII</option>
-                  <option value="IX">Kelas IX</option>
-                </select>
-                <select id="filterNilaiSemester" onchange="renderStudentNilaiProgress()">
-                  <option value="Semester 1">Semester 1</option>
-                  <option value="Semester 2">Semester 2</option>
-                  <option value="Final Exam">Final Exam</option>
-                </select>
-              </div>
-              <div id="studentNilaiProgress"></div>
+                <h3 style="margin-top:22px;">Nilai Per Semester</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;">
+                  <select id="filterNilaiKelas" onchange="renderStudentNilaiProgress()">
+                    <option value="VII">Kelas VII</option>
+                    <option value="VIII">Kelas VIII</option>
+                    <option value="IX">Kelas IX</option>
+                  </select>
+                  <select id="filterNilaiSemester" onchange="renderStudentNilaiProgress()">
+                    <option value="Semester 1">Semester 1</option>
+                    <option value="Semester 2">Semester 2</option>
+                    <option value="Final Exam">Final Exam</option>
+                  </select>
+                </div>
+                <div id="studentNilaiProgress"></div>
               </div>
             </div>
           </div>
@@ -1165,32 +1164,27 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
             </div>
 
             <div class="class-card modern-history" id="guruPengajuanCard">
-  <div class="online-badge">Pengajuan Terbaru</div>
-
-  <div id="guruPengajuanList">
-    <div class="small-text">
-      Belum ada pengajuan izin.
-    </div>
-  </div>
-
-  <button class="big-red"
-          onclick="showPage('accPage')">
-    ACC Pengajuan →
-  </button>
-</div>
-      
-          <div class="card agenda-dashboard-card" id="agendaDashboardSection">
-            <h2>Notifikasi Agenda</h2>
-            <p style="color:#64748b;margin-top:-8px;">Jadwal agenda dari Guru akan tampil di sini.</p>
-            <div id="dashboardAgenda" class="agenda-list"></div>
+              <div class="online-badge">Pengajuan Terbaru</div>
+              <div id="guruPengajuanList">
+                <div class="small-text">Belum ada pengajuan izin.</div>
+              </div>
+              <button class="big-red" onclick="showPage('accPage')">ACC Pengajuan →</button>
+            </div>
           </div>
+        </div>
 
-          <div class="card berita-dashboard-card" id="beritaDashboardSection">
-            <h2>Berita Pramuka Terbaru</h2>
-            <p style="color:#64748b;margin-top:-8px;">Berita terbaru dari Guru/BPH akan tampil di sini.</p>
-            <div id="dashboardBerita"></div>
-          </div>
-</div>
+        <div class="card agenda-dashboard-card" id="agendaDashboardSection">
+          <h2>Notifikasi Agenda</h2>
+          <p style="color:#64748b;margin-top:-8px;">Jadwal agenda dari Guru akan tampil di sini.</p>
+          <div id="dashboardAgenda" class="agenda-list"></div>
+        </div>
+
+        <div class="card berita-dashboard-card" id="beritaDashboardSection">
+          <h2>Berita Pramuka Terbaru</h2>
+          <p style="color:#64748b;margin-top:-8px;">Berita terbaru dari Guru/BPH akan tampil di sini.</p>
+          <div id="dashboardBerita"></div>
+        </div>
+      </div>
 
       <div id="absenPage" class="card hidden">
         <h2>Absen RFID</h2>
@@ -2966,18 +2960,19 @@ function updateDashboard(){
 }
 
 
-function renderStatusIzinSiswa(){
-  function renderGuruPengajuan(){
+function renderGuruPengajuan(){
 
   const box = document.getElementById("guruPengajuanList");
   if(!box) return;
 
   if(!currentUser || currentUser.role !== "guru"){
-    document.getElementById("guruPengajuanCard").style.display="none";
+    const card = document.getElementById("guruPengajuanCard");
+    if(card) card.style.display="none";
     return;
   }
 
-  document.getElementById("guruPengajuanCard").style.display="block";
+  const card = document.getElementById("guruPengajuanCard");
+  if(card) card.style.display="block";
 
   let data = [];
 
@@ -3033,6 +3028,8 @@ function renderStatusIzinSiswa(){
   }).join("");
 
 }
+
+function renderStatusIzinSiswa(){
   const box = document.getElementById("statusIzinSiswa");
   if(!box) return;
 
