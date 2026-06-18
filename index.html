@@ -7,6 +7,46 @@
 <link rel="icon" type="image/png" href="pasprapatii.png">
 
 <style>
+.pengajuan-item{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:14px;
+  padding:12px;
+  margin-bottom:10px;
+}
+
+.pengajuan-title{
+  font-weight:700;
+  margin-bottom:4px;
+}
+
+.pengajuan-date{
+  font-size:12px;
+  color:#64748b;
+}
+
+.pengajuan-status{
+  margin-top:6px;
+  display:inline-block;
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:bold;
+  color:white;
+}
+
+.status-pending{
+  background:#f59e0b;
+}
+
+.status-approved{
+  background:#22c55e;
+}
+
+.status-rejected{
+  background:#ef4444;
+}
+  
 *{box-sizing:border-box}
 :root{
   --primary:#069bd8;
@@ -1124,17 +1164,20 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
               <div class="empty-status">Belum ada data izin</div>
             </div>
 
-            <div class="class-card modern-history">
-              <div class="online-badge">History</div>
-              <h3>PASPRAPATI - PRAMUKA</h3>
-              <p>Sistem Absensi Anggota Pramuka</p>
-              <p class="small-text">Status: Online</p>
-              <p class="small-text">User aktif: <b id="activeUserText">-</b></p>
-              <p class="small-text">Role: <b id="activeRoleText">-</b></p>
-              <button class="big-red" onclick="showPage('riwayatPage')">View Data Riwayat →</button>
-            </div>
-          </div>
-        </div>
+            <div class="class-card modern-history" id="guruPengajuanCard">
+  <div class="online-badge">Pengajuan Terbaru</div>
+
+  <div id="guruPengajuanList">
+    <div class="small-text">
+      Belum ada pengajuan izin.
+    </div>
+  </div>
+
+  <button class="big-red"
+          onclick="showPage('accPage')">
+    ACC Pengajuan →
+  </button>
+</div>
       
           <div class="card agenda-dashboard-card" id="agendaDashboardSection">
             <h2>Notifikasi Agenda</h2>
@@ -2922,6 +2965,72 @@ function updateDashboard(){
 
 
 function renderStatusIzinSiswa(){
+  function renderGuruPengajuan(){
+
+  const box = document.getElementById("guruPengajuanList");
+  if(!box) return;
+
+  if(!currentUser || currentUser.role !== "guru"){
+    document.getElementById("guruPengajuanCard").style.display="none";
+    return;
+  }
+
+  document.getElementById("guruPengajuanCard").style.display="block";
+
+  let data = [];
+
+  sakit.forEach(x=>{
+    data.push({
+      nama:x.nama,
+      tanggal:x.tanggal,
+      jenis:"Izin Sakit",
+      status:x.status || "Pending"
+    });
+  });
+
+  izin.forEach(x=>{
+    data.push({
+      nama:x.nama,
+      tanggal:x.tanggal,
+      jenis:"Izin Lainnya",
+      status:x.status || "Pending"
+    });
+  });
+
+  data.sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));
+
+  const terbaru = data.slice(0,5);
+
+  if(terbaru.length===0){
+    box.innerHTML="Belum ada pengajuan.";
+    return;
+  }
+
+  box.innerHTML = terbaru.map(item=>{
+
+    let cls="status-pending";
+
+    if(item.status==="Approved") cls="status-approved";
+    if(item.status==="Rejected") cls="status-rejected";
+
+    return `
+      <div class="pengajuan-item">
+        <div class="pengajuan-title">
+          ${item.jenis} - ${item.nama}
+        </div>
+
+        <div class="pengajuan-date">
+          ${item.tanggal}
+        </div>
+
+        <span class="pengajuan-status ${cls}">
+          ${item.status}
+        </span>
+      </div>
+    `;
+  }).join("");
+
+}
   const box = document.getElementById("statusIzinSiswa");
   if(!box) return;
 
