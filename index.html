@@ -737,27 +737,6 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
   margin-top:22px;
 }
 
-
-/* EDIT AKUN */
-.akun-form{
-  background:#f8fafc;
-  border:1px solid #e2e8f0;
-  border-radius:20px;
-  padding:18px;
-  margin-bottom:18px;
-}
-.akun-info{
-  background:linear-gradient(180deg,#ffffff,#f8fafc);
-  border:1px solid #e2e8f0;
-  border-radius:20px;
-  padding:18px;
-  box-shadow:0 10px 22px rgba(15,23,42,.05);
-}
-.akun-info p{
-  margin:8px 0;
-  color:#475569;
-}
-
 </style>
 </head>
 
@@ -774,9 +753,8 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
 
 <div id="loginPage" class="login-bg">
   <div class="login-card">
-    <img src="pasprapatii.png" class="login-logo" onerror="this.style.display='none'">
+    <img src=".png" class="login-logo" onerror="this.style.display='none'">
     <h2>Login PASPRAPATI</h2>
-    <p style="text-align:center;color:#64748b;margin-top:-8px;">Guru, BPH, dan siswa bisa login manual pakai username & password.</p>
 
     <input type="text" id="loginUser" placeholder="Username">
     <input type="password" id="loginPass" placeholder="Password">
@@ -850,7 +828,6 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
       <button id="btnAccIzin" onclick="showPage('accPage',this)"><span class="nav-icon">✅</span> ACC Izin</button>
       <button id="btnHistoriRegistrasi" onclick="showPage('historiRegistrasiPage',this)"><span class="nav-icon">🧾</span> Histori Registrasi</button>
       <button onclick="showPage('riwayatPage',this)"><span class="nav-icon">📊</span> Riwayat</button>
-      <button id="btnEditAkun" onclick="showPage('editAkunPage',this)"><span class="nav-icon">⚙️</span> Edit Akun</button>
       <button class="logout-btn" onclick="logout()"><span class="nav-icon">🚪</span> Logout</button>
     </div>
   </aside>
@@ -870,11 +847,11 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
 
         <div class="card hero-card">
           <div class="hero-left">
-            <span class="welcome-chip">PASPRAPATI DIGITAL SYSTEM</span>
+            <span class="welcome-chip">PASPRAPATI RFID SYSTEM</span>
             <h1>Selamat Datang, <span id="welcomeName">User</span></h1>
-            <p>Sistem Absensi, Perizinan, dan Administrasi Anggota Pramuka Berbasis Digital.</p>
+            <p>Sistem Absensi, Perizinan, dan Administrasi Anggota Pramuka Berbasis RFID.</p>
           </div>
-          <img src="Pramuka.png" class="hero-logo" onerror="this.style.display='none'">
+          <img src="/Users/user/Documents/Pasprapati/Pramuka.png" class="hero-logo" onerror="this.style.display='none'">
         </div>
 
         <div class="card chart-card">
@@ -1169,35 +1146,6 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
         <div id="tableHistoriRegistrasi"></div>
       </div>
 
-      
-      <div id="editAkunPage" class="card hidden">
-        <h2>Edit Akun</h2>
-        <p style="color:#64748b;margin-top:-8px;">Ubah nama lengkap, username, dan sandi akun yang sedang login.</p>
-
-        <div class="akun-form">
-          <label>Nama Lengkap</label>
-          <input type="text" id="editFullName" placeholder="Nama lengkap">
-
-          <label>Username</label>
-          <input type="text" id="editUsername" placeholder="Username">
-
-          <label>Sandi Baru</label>
-          <input type="password" id="editPassword" placeholder="Kosongkan jika tidak ingin ubah sandi">
-
-          <label>Konfirmasi Sandi Baru</label>
-          <input type="password" id="editPasswordConfirm" placeholder="Ulangi sandi baru">
-
-          <button class="btn-blue" onclick="simpanEditAkun()">Simpan Perubahan</button>
-        </div>
-
-        <div class="akun-info">
-          <h3>Informasi Akun Saat Ini</h3>
-          <p><b>Nama:</b> <span id="infoAkunNama">-</span></p>
-          <p><b>Username:</b> <span id="infoAkunUsername">-</span></p>
-          <p><b>Role:</b> <span id="infoAkunRole">-</span></p>
-        </div>
-      </div>
-
       <div id="riwayatPage" class="card hidden">
         <h2>Riwayat Data</h2>
         <button class="btn-blue" onclick="renderData()">Refresh</button>
@@ -1216,7 +1164,131 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics-compat.js"></script>
+
 <script>
+
+/* ================= FIREBASE FIRESTORE ONLINE DATABASE ================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyD3G8bzCY9dDazRllSYe-vp3LiAuNTEIAY",
+  authDomain: "pasprapati.firebaseapp.com",
+  projectId: "pasprapati",
+  storageBucket: "pasprapati.firebasestorage.app",
+  messagingSenderId: "226643971452",
+  appId: "1:226643971452:web:ac584245d0656c706628f9",
+  measurementId: "G-NXBCSWRZV6"
+};
+
+firebase.initializeApp(firebaseConfig);
+try{ firebase.analytics(); }catch(e){}
+
+const db = firebase.firestore();
+const CLOUD_DOC = db.collection("pasprapati").doc("main_data");
+let cloudLoaded = false;
+let cloudSaving = false;
+
+function cleanForFirestore(value){
+  return JSON.parse(JSON.stringify(value || null));
+}
+
+function saveLocalOnly(){
+  localStorage.setItem("pasprapati_users", JSON.stringify(users));
+  localStorage.setItem("pasprapati_siswa", JSON.stringify(siswa));
+  localStorage.setItem("pasprapati_absensi", JSON.stringify(absensi));
+  localStorage.setItem("pasprapati_sakit", JSON.stringify(sakit));
+  localStorage.setItem("pasprapati_izin", JSON.stringify(izin));
+  localStorage.setItem("pasprapati_dokumen_siswa", JSON.stringify(dokumenSiswa));
+  localStorage.setItem("pasprapati_histori_registrasi", JSON.stringify(historiRegistrasi));
+  localStorage.setItem("pasprapati_berita", JSON.stringify(beritaPramuka));
+  localStorage.setItem("pasprapati_nilai_siswa", JSON.stringify(nilaiSiswa));
+}
+
+async function saveCloudData(){
+  try{
+    if(cloudSaving) return;
+    cloudSaving = true;
+    await CLOUD_DOC.set({
+      users: cleanForFirestore(users),
+      siswa: cleanForFirestore(siswa),
+      absensi: cleanForFirestore(absensi),
+      sakit: cleanForFirestore(sakit),
+      izin: cleanForFirestore(izin),
+      dokumenSiswa: cleanForFirestore(dokumenSiswa),
+      historiRegistrasi: cleanForFirestore(historiRegistrasi),
+      beritaPramuka: cleanForFirestore(beritaPramuka),
+      nilaiSiswa: cleanForFirestore(nilaiSiswa),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, {merge:true});
+  }catch(err){
+    console.error("Gagal simpan Firebase:", err);
+    showError("Gagal simpan ke Firebase. Cek internet / Firestore Rules.");
+  }finally{
+    cloudSaving = false;
+  }
+}
+
+function applyCloudData(data){
+  users = Array.isArray(data.users) ? data.users : users;
+  siswa = Array.isArray(data.siswa) ? data.siswa : siswa;
+  absensi = Array.isArray(data.absensi) ? data.absensi : absensi;
+  sakit = Array.isArray(data.sakit) ? data.sakit : sakit;
+  izin = Array.isArray(data.izin) ? data.izin : izin;
+  dokumenSiswa = Array.isArray(data.dokumenSiswa) ? data.dokumenSiswa : dokumenSiswa;
+  historiRegistrasi = Array.isArray(data.historiRegistrasi) ? data.historiRegistrasi : historiRegistrasi;
+  beritaPramuka = Array.isArray(data.beritaPramuka) ? data.beritaPramuka : beritaPramuka;
+  nilaiSiswa = Array.isArray(data.nilaiSiswa) ? data.nilaiSiswa : nilaiSiswa;
+  saveLocalOnly();
+}
+
+function refreshAllViews(){
+  try{ updateDashboard(); }catch(e){}
+  try{ renderChartDashboard(); }catch(e){}
+  try{ renderStatusIzinSiswa(); }catch(e){}
+  try{ renderDashboardBerita(); }catch(e){}
+  try{ if(currentUser && currentUser.role !== "guru") renderStudentNilaiProgress(); }catch(e){}
+  try{ renderListSiswa(); }catch(e){}
+  try{ renderDokumenSiswa(); }catch(e){}
+  try{ renderNilaiSelectSiswa(); }catch(e){}
+  try{ renderNilaiTable(); }catch(e){}
+  try{ renderKelolaBerita(); }catch(e){}
+  try{ renderAcc(); }catch(e){}
+  try{ renderData(); }catch(e){}
+  try{ renderHistoriRegistrasi(); }catch(e){}
+}
+
+async function loadCloudData(){
+  try{
+    const snap = await CLOUD_DOC.get();
+    if(snap.exists){
+      applyCloudData(snap.data() || {});
+      cloudLoaded = true;
+    }else{
+      cloudLoaded = true;
+      await saveCloudData();
+    }
+    refreshAllViews();
+    console.log("PASPRAPATI Firestore siap");
+  }catch(err){
+    cloudLoaded = true;
+    console.error("Gagal load Firebase:", err);
+    showError("Gagal konek Firebase. Data lokal tetap bisa dipakai.");
+  }
+}
+
+async function ensureCloudLoaded(){
+  if(cloudLoaded) return;
+  await loadCloudData();
+}
+
+CLOUD_DOC.onSnapshot((snap)=>{
+  if(!snap.exists || !cloudLoaded) return;
+  applyCloudData(snap.data() || {});
+  refreshAllViews();
+});
+
 function renderListSiswa(){
   const box = document.getElementById("listDataSiswa");
   if(!box) return;
@@ -1300,16 +1372,13 @@ function updateNilaiDashboardVisibility(){
   section.style.display = currentUser.role === "guru" ? "none" : "block";
 }
 
-function saveUsers(){localStorage.setItem("pasprapati_users", JSON.stringify(users))}
+function saveUsers(){
+  localStorage.setItem("pasprapati_users", JSON.stringify(users));
+  saveCloudData();
+}
 function saveAll(){
-  localStorage.setItem("pasprapati_siswa", JSON.stringify(siswa));
-  localStorage.setItem("pasprapati_absensi", JSON.stringify(absensi));
-  localStorage.setItem("pasprapati_sakit", JSON.stringify(sakit));
-  localStorage.setItem("pasprapati_izin", JSON.stringify(izin));
-  localStorage.setItem("pasprapati_dokumen_siswa", JSON.stringify(dokumenSiswa));
-  localStorage.setItem("pasprapati_histori_registrasi", JSON.stringify(historiRegistrasi));
-  localStorage.setItem("pasprapati_berita", JSON.stringify(beritaPramuka));
-  localStorage.setItem("pasprapati_nilai_siswa", JSON.stringify(nilaiSiswa));
+  saveLocalOnly();
+  saveCloudData();
 }
 function showSuccess(msg){
   const box=document.getElementById("alertSuccess");
@@ -1337,7 +1406,8 @@ function showLogin(){
   document.getElementById("loginPage").classList.remove("hidden");
   focusLoginRFID();
 }
-function registerUser(){
+async function registerUser(){
+  await ensureCloudLoaded();
   const username=document.getElementById("regUser").value.trim();
   const fullName=document.getElementById("regFullName").value.trim();
   const password=document.getElementById("regPass").value.trim();
@@ -1353,7 +1423,7 @@ function registerUser(){
     return;
   }
   if((role==="guru" || role==="bph") && !loginRFID){
-    alert("RFID login guru wajib diisi");
+    alert("RFID login Guru/BPH wajib diisi");
     return;
   }
   if(loginRFID && users.some(u=>String(u.loginRFID||"").trim()===loginRFID)){
@@ -1392,26 +1462,16 @@ function registerUser(){
   alert("Registrasi berhasil sebagai "+role);
   showLogin();
 }
-function login(){
+async function login(){
+  await ensureCloudLoaded();
   const u=document.getElementById("loginUser").value.trim();
   const p=document.getElementById("loginPass").value.trim();
-
-  if(!u || !p){
-    alert("Username dan password wajib diisi");
-    return;
-  }
-
   const found=users.find(user=>user.username===u && user.password===p);
-
-  if(!found){
-    alert("Username atau password salah");
-    return;
-  }
-
-  // Login manual berlaku untuk siswa, guru, dan BPH
+  if(!found){alert("Username atau password salah");return}
   masukAplikasi(found);
 }
-function loginDenganRFID(uid){
+async function loginDenganRFID(uid){
+  await ensureCloudLoaded();
   if(loginLock)return;
   loginLock=true;
 
@@ -1515,7 +1575,7 @@ function showPage(id,btn){
     return;
   }
 
-  const pages=["dashboardPage","absenPage","siswaPage","nilaiPage","uploadDokumenPage","kelolaBeritaPage","sakitPage","izinPage","accPage","historiRegistrasiPage","riwayatPage","editAkunPage"];
+  const pages=["dashboardPage","absenPage","siswaPage","nilaiPage","uploadDokumenPage","kelolaBeritaPage","sakitPage","izinPage","accPage","historiRegistrasiPage","riwayatPage"];
   pages.forEach(page=>document.getElementById(page).classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
 
@@ -1533,8 +1593,7 @@ function showPage(id,btn){
     izinPage:"Izin Lainnya",
     accPage:"ACC Izin",
     historiRegistrasiPage:"Histori Registrasi",
-    riwayatPage:"Riwayat",
-    editAkunPage:"Edit Akun"
+    riwayatPage:"Riwayat"
   };
 
   document.getElementById("pageTitle").innerText=titleMap[id] || "Dashboard";
@@ -1552,7 +1611,6 @@ function showPage(id,btn){
   if(id==="accPage") renderAcc();
   if(id==="historiRegistrasiPage") renderHistoriRegistrasi();
   if(id==="kelolaBeritaPage") renderKelolaBerita();
-  if(id==="editAkunPage") renderEditAkun();
 
   if(id==="absenPage"){
     absenLock=false;
@@ -2700,114 +2758,6 @@ function batalEditBerita(){
   if(foto) foto.value = "";
 }
 
-
-function renderEditAkun(){
-  if(!currentUser) return;
-
-  const fullName = document.getElementById("editFullName");
-  const username = document.getElementById("editUsername");
-  const pass = document.getElementById("editPassword");
-  const passConfirm = document.getElementById("editPasswordConfirm");
-
-  if(fullName) fullName.value = currentUser.fullName || currentUser.username || "";
-  if(username) username.value = currentUser.username || "";
-  if(pass) pass.value = "";
-  if(passConfirm) passConfirm.value = "";
-
-  const infoNama = document.getElementById("infoAkunNama");
-  const infoUsername = document.getElementById("infoAkunUsername");
-  const infoRole = document.getElementById("infoAkunRole");
-
-  if(infoNama) infoNama.innerText = currentUser.fullName || currentUser.username || "-";
-  if(infoUsername) infoUsername.innerText = currentUser.username || "-";
-  if(infoRole) infoRole.innerText = currentUser.role || "-";
-}
-
-function simpanEditAkun(){
-  if(!currentUser){
-    showError("Silakan login terlebih dahulu");
-    return;
-  }
-
-  const oldUsername = currentUser.username;
-  const newFullName = document.getElementById("editFullName").value.trim();
-  const newUsername = document.getElementById("editUsername").value.trim();
-  const newPassword = document.getElementById("editPassword").value.trim();
-  const confirmPassword = document.getElementById("editPasswordConfirm").value.trim();
-
-  if(!newFullName || !newUsername){
-    showError("Nama lengkap dan username wajib diisi");
-    return;
-  }
-
-  const usernameDipakai = users.some(u =>
-    u.username === newUsername &&
-    u.username !== oldUsername
-  );
-
-  if(usernameDipakai){
-    showError("Username sudah dipakai akun lain");
-    return;
-  }
-
-  if(newPassword && newPassword.length < 4){
-    showError("Sandi minimal 4 karakter");
-    return;
-  }
-
-  if(newPassword !== confirmPassword){
-    showError("Konfirmasi sandi tidak sama");
-    return;
-  }
-
-  users = users.map(u => {
-    if(u.username === oldUsername){
-      return {
-        ...u,
-        username:newUsername,
-        fullName:newFullName,
-        password:newPassword ? newPassword : u.password,
-        tanggalEditAkun:new Date().toLocaleString("id-ID")
-      };
-    }
-    return u;
-  });
-
-  currentUser = users.find(u => u.username === newUsername);
-
-  // Update data yang terhubung dengan username lama supaya status izin/dokumen tetap kebaca
-  sakit = sakit.map(item => item.pemohonUsername === oldUsername ? {...item, pemohonUsername:newUsername, nama:item.nama === oldUsername ? newFullName : item.nama} : item);
-  izin = izin.map(item => item.pemohonUsername === oldUsername ? {...item, pemohonUsername:newUsername, nama:item.nama === oldUsername ? newFullName : item.nama} : item);
-  dokumenSiswa = dokumenSiswa.map(item => item.username === oldUsername ? {...item, username:newUsername, nama:item.nama === oldUsername ? newFullName : item.nama} : item);
-
-  historiRegistrasi.push({
-    id:Date.now(),
-    username:newUsername,
-    fullName:newFullName,
-    role:currentUser.role,
-    loginRFID:currentUser.loginRFID || "",
-    tanggalRegistrasi:"Edit Akun - " + new Date().toLocaleString("id-ID")
-  });
-
-  saveUsers();
-  saveAll();
-
-  const displayName = currentUser.fullName || currentUser.username;
-  const welcomeName = document.getElementById("welcomeName");
-  if(welcomeName) welcomeName.innerText = displayName;
-
-  document.getElementById("activeUserText").innerText = displayName;
-  document.getElementById("activeRoleText").innerText =
-    currentUser.role === "guru" ? "Teacher" :
-    (currentUser.role === "bph" ? "BPH" : "Student");
-
-  showSuccess("Akun berhasil diperbarui");
-  renderEditAkun();
-  renderStatusIzinSiswa();
-  renderStudentNilaiProgress();
-}
-
-
 function backupData(){
 
 if(typeof XLSX === "undefined"){
@@ -2965,6 +2915,10 @@ setInterval(updateClock,1000);
 updateClock();
 updateDashboard();
 setTimeout(renderChartDashboard,300);
+
+window.addEventListener("load", async()=>{
+  await loadCloudData();
+});
 </script>
 </body>
 </html>
