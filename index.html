@@ -596,6 +596,95 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
 }
 
 
+/* AGENDA PRAMUKA */
+.agenda-dashboard-card{
+  background:linear-gradient(180deg,#ffffff,#f8fafc);
+}
+.agenda-list{
+  display:grid;
+  gap:12px;
+}
+.agenda-card{
+  display:grid;
+  grid-template-columns:120px 1fr;
+  gap:14px;
+  padding:16px;
+  border-radius:20px;
+  background:white;
+  border:1px solid #e2e8f0;
+  box-shadow:0 10px 22px rgba(15,23,42,.06);
+  position:relative;
+  overflow:hidden;
+}
+.agenda-card:before{
+  content:"";
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:0;
+  width:7px;
+  background:var(--agenda-color);
+}
+.agenda-date{
+  padding:12px;
+  border-radius:16px;
+  background:color-mix(in srgb, var(--agenda-color) 13%, white);
+  color:var(--agenda-color);
+  text-align:center;
+  font-weight:900;
+}
+.agenda-date span{
+  display:block;
+  font-size:12px;
+  color:#64748b;
+  margin-top:4px;
+}
+.agenda-title{
+  font-size:17px;
+  font-weight:900;
+  color:#0f172a;
+  margin-bottom:6px;
+}
+.agenda-meta{
+  color:#475569;
+  font-size:13px;
+  line-height:1.6;
+}
+.agenda-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 11px;
+  border-radius:999px;
+  background:var(--agenda-color);
+  color:white;
+  font-size:12px;
+  font-weight:900;
+  margin-bottom:8px;
+}
+.agenda-form{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:20px;
+  padding:18px;
+  margin-bottom:18px;
+}
+.agenda-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+.agenda-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+@media(max-width:700px){
+  .agenda-card{grid-template-columns:1fr}
+  .agenda-grid{grid-template-columns:1fr}
+}
+
+
 /* BERITA PRAMUKA */
 .berita-dashboard-card{
   background:linear-gradient(180deg,#ffffff,#f8fafc);
@@ -917,6 +1006,9 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
       <button id="btnUploadDokumen" onclick="showPage('uploadDokumenPage',this)">
         <span class="nav-icon">📁</span> Upload Dokumen
       </button>
+      <button id="btnAgenda" onclick="showPage('agendaPage',this)">
+        <span class="nav-icon">📅</span> Agenda
+      </button>
       <button id="btnKelolaBerita" onclick="showPage('kelolaBeritaPage',this)">
         <span class="nav-icon">📰</span> Kelola Berita
       </button>
@@ -1044,6 +1136,12 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
           </div>
         </div>
       
+          <div class="card agenda-dashboard-card" id="agendaDashboardSection">
+            <h2>Notifikasi Agenda</h2>
+            <p style="color:#64748b;margin-top:-8px;">Jadwal agenda dari Guru akan tampil di sini.</p>
+            <div id="dashboardAgenda" class="agenda-list"></div>
+          </div>
+
           <div class="card berita-dashboard-card" id="beritaDashboardSection">
             <h2>Berita Pramuka Terbaru</h2>
             <p style="color:#64748b;margin-top:-8px;">Berita terbaru dari Guru/BPH akan tampil di sini.</p>
@@ -1101,6 +1199,42 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
       </div>
 
       
+      <div id="agendaPage" class="card hidden">
+        <h2>Agenda Pramuka</h2>
+        <p style="color:#64748b;margin-top:-8px;">Guru bisa mengatur jadwal agenda. Siswa hanya melihat notifikasi agenda di dashboard.</p>
+
+        <div id="formAgendaGuru" class="agenda-form">
+          <input type="hidden" id="editAgendaId">
+          <div class="agenda-grid">
+            <div>
+              <label>Tanggal</label>
+              <input type="date" id="agendaTanggal">
+            </div>
+            <div>
+              <label>Jam</label>
+              <input type="time" id="agendaJam">
+            </div>
+          </div>
+
+          <label>Jenis Agenda</label>
+          <select id="agendaJenis">
+            <option value="Latihan">Latihan</option>
+            <option value="Rapat">Rapat</option>
+            <option value="Musyawarah Gugus Depan">Musyawarah Gugus Depan</option>
+            <option value="-">-</option>
+          </select>
+
+          <input type="text" id="agendaJudul" placeholder="Agenda / kegiatan">
+          <input type="text" id="agendaLokasi" placeholder="Lokasi">
+
+          <button class="btn-blue" onclick="simpanAgenda()">Simpan Agenda</button>
+          <button class="btn-gray" onclick="batalEditAgenda()">Batal Edit</button>
+        </div>
+
+        <h3>Daftar Agenda</h3>
+        <div id="tableAgenda"></div>
+      </div>
+
       <div id="uploadDokumenPage" class="card hidden">
         <h2>Upload Dokumen Siswa</h2>
         <p style="color:#64748b;margin-top:-8px;">Siswa bisa upload pas foto dan sertifikat di halaman ini.</p>
@@ -1301,6 +1435,7 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
 
         <h3>Data Siswa</h3><div id="tableSiswa"></div>
         <h3>Riwayat Absensi</h3><div id="tableAbsen"></div>
+        <h3>Agenda</h3><div id="tableAgendaRiwayat"></div>
         <h3>Izin Sakit</h3><div id="tableSakit"></div>
         <h3>Izin Lainnya</h3><div id="tableIzin"></div>
       </div>
@@ -1351,6 +1486,7 @@ function saveLocalOnly(){
   localStorage.setItem("pasprapati_histori_registrasi", JSON.stringify(historiRegistrasi));
   localStorage.setItem("pasprapati_berita", JSON.stringify(beritaPramuka));
   localStorage.setItem("pasprapati_nilai_siswa", JSON.stringify(nilaiSiswa));
+  localStorage.setItem("pasprapati_agenda", JSON.stringify(agendaPramuka));
 }
 
 async function saveCloudData(){
@@ -1367,6 +1503,7 @@ async function saveCloudData(){
       historiRegistrasi: cleanForFirestore(historiRegistrasi),
       beritaPramuka: cleanForFirestore(beritaPramuka),
       nilaiSiswa: cleanForFirestore(nilaiSiswa),
+      agendaPramuka: cleanForFirestore(agendaPramuka),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, {merge:true});
   }catch(err){
@@ -1387,6 +1524,7 @@ function applyCloudData(data){
   historiRegistrasi = Array.isArray(data.historiRegistrasi) ? data.historiRegistrasi : historiRegistrasi;
   beritaPramuka = Array.isArray(data.beritaPramuka) ? data.beritaPramuka : beritaPramuka;
   nilaiSiswa = Array.isArray(data.nilaiSiswa) ? data.nilaiSiswa : nilaiSiswa;
+  agendaPramuka = Array.isArray(data.agendaPramuka) ? data.agendaPramuka : agendaPramuka;
   saveLocalOnly();
 }
 
@@ -1395,6 +1533,7 @@ function refreshAllViews(){
   try{ renderChartDashboard(); }catch(e){}
   try{ renderStatusIzinSiswa(); }catch(e){}
   try{ renderDashboardBerita(); }catch(e){}
+  try{ renderDashboardAgenda(); }catch(e){}
   try{ if(currentUser && currentUser.role !== "guru") renderStudentNilaiProgress(); }catch(e){}
   try{ renderListSiswa(); }catch(e){}
   try{ renderDokumenSiswa(); }catch(e){}
@@ -1507,6 +1646,7 @@ let dokumenSiswa = JSON.parse(localStorage.getItem("pasprapati_dokumen_siswa")) 
 let historiRegistrasi = JSON.parse(localStorage.getItem("pasprapati_histori_registrasi")) || [];
 let beritaPramuka = JSON.parse(localStorage.getItem("pasprapati_berita")) || [];
 let nilaiSiswa = JSON.parse(localStorage.getItem("pasprapati_nilai_siswa")) || [];
+let agendaPramuka = JSON.parse(localStorage.getItem("pasprapati_agenda")) || [];
 let absenLock = false;
 let loginLock = false;
 let barChartPasprapati;
@@ -1839,6 +1979,7 @@ function masukAplikasi(user){
   document.getElementById("btnDataSiswa").style.display = isGuru ? "flex" : "none";
   document.getElementById("btnInputNilai").style.display = isGuru ? "flex" : "none";
   document.getElementById("btnKelolaBerita").style.display = (isGuru || isBPH) ? "flex" : "none";
+  document.getElementById("btnAgenda").style.display = "flex";
   document.getElementById("btnHistoriRegistrasi").style.display = isGuru ? "flex" : "none";
 
   if(currentUser.role === "siswa" || currentUser.role === "bph"){
@@ -1903,7 +2044,7 @@ function showPage(id,btn){
     return;
   }
 
-  const pages=["dashboardPage","editAkunPage","absenPage","siswaPage","nilaiPage","uploadDokumenPage","kelolaBeritaPage","sakitPage","izinPage","accPage","historiRegistrasiPage","riwayatPage"];
+  const pages=["dashboardPage","editAkunPage","absenPage","siswaPage","nilaiPage","agendaPage","uploadDokumenPage","kelolaBeritaPage","sakitPage","izinPage","accPage","historiRegistrasiPage","riwayatPage"];
   pages.forEach(page=>document.getElementById(page).classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
 
@@ -1916,6 +2057,7 @@ function showPage(id,btn){
     absenPage:"Absen RFID",
     siswaPage:"Data Siswa",
     nilaiPage:"Input Nilai",
+    agendaPage:"Agenda",
     uploadDokumenPage:"Upload Dokumen",
     kelolaBeritaPage:"Kelola Berita",
     sakitPage:"Izin Sakit",
@@ -1932,6 +2074,7 @@ function showPage(id,btn){
     renderChartDashboard();
     renderStatusIzinSiswa();
     renderDashboardBerita();
+    renderDashboardAgenda();
     renderKelolaBerita();
     renderStudentNilaiProgress();
   }
@@ -1955,6 +2098,8 @@ function showPage(id,btn){
     renderNilaiSelectSiswa();
     renderNilaiTable();
   }
+  if(id === "agendaPage") renderAgendaPage();
+
   if(id === "uploadDokumenPage"){
     const namaBox = document.getElementById("dokNamaSiswa");
     if(namaBox && currentUser && (currentUser.role === "siswa" || currentUser.role === "bph") && !namaBox.value){
@@ -2394,6 +2539,164 @@ function renderAcc(){
   </table>`;
 }
 
+
+function getAgendaColor(jenis){
+  if(jenis === "Latihan") return "#f97316";
+  if(jenis === "Rapat") return "#16a34a";
+  if(jenis === "Musyawarah Gugus Depan") return "#2563eb";
+  return "#64748b";
+}
+
+function formatTanggalAgenda(tanggal){
+  if(!tanggal) return "-";
+  const d = new Date(tanggal + "T00:00:00");
+  if(isNaN(d.getTime())) return tanggal;
+  return d.toLocaleDateString("id-ID", {day:"2-digit", month:"short", year:"numeric"});
+}
+
+function sortAgenda(data){
+  return [...data].sort((a,b)=>{
+    const da = new Date((a.tanggal || "") + "T" + (a.jam || "00:00"));
+    const db = new Date((b.tanggal || "") + "T" + (b.jam || "00:00"));
+    return da - db;
+  });
+}
+
+function renderAgendaCards(data, showActions=false){
+  if(!data || data.length === 0){
+    return `<div class="empty-status">Belum ada agenda.</div>`;
+  }
+
+  return sortAgenda(data).map(item=>{
+    const color = getAgendaColor(item.jenis);
+    return `
+      <div class="agenda-card" style="--agenda-color:${color};">
+        <div class="agenda-date">
+          ${formatTanggalAgenda(item.tanggal)}
+          <span>${item.jam || "-"} WIB</span>
+        </div>
+        <div>
+          <div class="agenda-badge">📌 ${item.jenis || "-"}</div>
+          <div class="agenda-title">${item.agenda || "-"}</div>
+          <div class="agenda-meta">
+            📍 Lokasi: <b>${item.lokasi || "-"}</b><br>
+            Dibuat oleh: ${item.dibuatOleh || "Guru"}
+          </div>
+          ${showActions ? `
+            <div class="agenda-actions" style="margin-top:12px;">
+              <button class="btn-blue" onclick="editAgenda(${item.id})">Edit</button>
+              <button class="btn-red" onclick="hapusAgenda(${item.id})">Hapus</button>
+            </div>` : ""}
+        </div>
+      </div>`;
+  }).join("");
+}
+
+function renderDashboardAgenda(){
+  const box = document.getElementById("dashboardAgenda");
+  if(!box) return;
+
+  const now = new Date();
+  const dataMendatang = agendaPramuka.filter(item=>{
+    if(!item.tanggal) return true;
+    const t = new Date(item.tanggal + "T" + (item.jam || "00:00"));
+    return t >= new Date(now.getFullYear(), now.getMonth(), now.getDate()-1);
+  });
+
+  box.innerHTML = renderAgendaCards(dataMendatang.slice(0,5), false);
+}
+
+function renderAgendaPage(){
+  const form = document.getElementById("formAgendaGuru");
+  const table = document.getElementById("tableAgenda");
+  if(!table) return;
+
+  const isGuru = currentUser && currentUser.role === "guru";
+  if(form) form.style.display = isGuru ? "block" : "none";
+
+  table.innerHTML = renderAgendaCards(agendaPramuka, isGuru);
+}
+
+function resetAgendaForm(){
+  ["editAgendaId","agendaTanggal","agendaJam","agendaJudul","agendaLokasi"].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.value = "";
+  });
+  const jenis = document.getElementById("agendaJenis");
+  if(jenis) jenis.value = "Latihan";
+}
+
+function batalEditAgenda(){
+  resetAgendaForm();
+}
+
+function simpanAgenda(){
+  if(!currentUser || currentUser.role !== "guru"){
+    showError("Hanya guru yang bisa mengatur agenda");
+    return;
+  }
+
+  const idEdit = document.getElementById("editAgendaId").value;
+  const tanggal = document.getElementById("agendaTanggal").value;
+  const jam = document.getElementById("agendaJam").value;
+  const jenis = document.getElementById("agendaJenis").value;
+  const agenda = document.getElementById("agendaJudul").value.trim();
+  const lokasi = document.getElementById("agendaLokasi").value.trim();
+
+  if(!tanggal || !jam || !jenis || !agenda || !lokasi){
+    showError("Tanggal, jam, agenda, dan lokasi wajib diisi");
+    return;
+  }
+
+  const dataBaru = {
+    id: idEdit ? Number(idEdit) : Date.now(),
+    tanggal,
+    jam,
+    jenis,
+    agenda,
+    lokasi,
+    dibuatOleh: currentUser.fullName || currentUser.username,
+    tanggalInput: new Date().toLocaleString("id-ID")
+  };
+
+  if(idEdit){
+    agendaPramuka = agendaPramuka.map(item => item.id === Number(idEdit) ? dataBaru : item);
+    showSuccess("Agenda berhasil diperbarui");
+  }else{
+    agendaPramuka.push(dataBaru);
+    showSuccess("Agenda berhasil ditambahkan");
+  }
+
+  saveAll();
+  resetAgendaForm();
+  renderAgendaPage();
+  renderDashboardAgenda();
+}
+
+function editAgenda(id){
+  if(!currentUser || currentUser.role !== "guru") return;
+  const item = agendaPramuka.find(a => a.id === id);
+  if(!item) return;
+
+  document.getElementById("editAgendaId").value = item.id;
+  document.getElementById("agendaTanggal").value = item.tanggal || "";
+  document.getElementById("agendaJam").value = item.jam || "";
+  document.getElementById("agendaJenis").value = item.jenis || "Latihan";
+  document.getElementById("agendaJudul").value = item.agenda || "";
+  document.getElementById("agendaLokasi").value = item.lokasi || "";
+  showSuccess("Mode edit agenda aktif");
+}
+
+function hapusAgenda(id){
+  if(!currentUser || currentUser.role !== "guru") return;
+  if(!confirm("Hapus agenda ini?")) return;
+  agendaPramuka = agendaPramuka.filter(a => a.id !== id);
+  saveAll();
+  renderAgendaPage();
+  renderDashboardAgenda();
+  showSuccess("Agenda berhasil dihapus");
+}
+
 function renderData(){
   document.getElementById("tableSiswa").innerHTML=`
   <div style="overflow:auto;">
@@ -2446,6 +2749,24 @@ function renderData(){
       </tr>
     `).join("")}
   </table>`;
+
+  const agendaRiwayat = document.getElementById("tableAgendaRiwayat");
+  if(agendaRiwayat){
+    agendaRiwayat.innerHTML=`
+    <table>
+      <tr><th>Tanggal</th><th>Jam</th><th>Jenis</th><th>Agenda</th><th>Lokasi</th><th>Dibuat Oleh</th></tr>
+      ${sortAgenda(agendaPramuka).map(a=>`
+        <tr>
+          <td>${formatTanggalAgenda(a.tanggal)}</td>
+          <td>${a.jam || "-"}</td>
+          <td><span class="badge" style="background:${getAgendaColor(a.jenis)}">${a.jenis || "-"}</span></td>
+          <td>${a.agenda || "-"}</td>
+          <td>${a.lokasi || "-"}</td>
+          <td>${a.dibuatOleh || "-"}</td>
+        </tr>
+      `).join("")}
+    </table>`;
+  }
 
   document.getElementById("tableSakit").innerHTML=`
   <table>
@@ -3083,6 +3404,7 @@ async function uploadBerita(){
     saveAll();
     batalEditBerita();
     renderDashboardBerita();
+    renderDashboardAgenda();
     renderKelolaBerita();
 
   }catch(err){
@@ -3216,6 +3538,15 @@ XLSX.utils.book_append_sheet(
   "Nilai Siswa"
 );
 
+const wsAgenda =
+  XLSX.utils.json_to_sheet(agendaPramuka);
+
+XLSX.utils.book_append_sheet(
+  wb,
+  wsAgenda,
+  "Agenda"
+);
+
 const tanggal =
   new Date()
   .toISOString()
@@ -3241,6 +3572,7 @@ function hapusSemuaData(){
     localStorage.removeItem("pasprapati_histori_registrasi");
     localStorage.removeItem("pasprapati_berita");
     localStorage.removeItem("pasprapati_nilai_siswa");
+    localStorage.removeItem("pasprapati_agenda");
 
     siswa=[];
     absensi=[];
@@ -3250,6 +3582,7 @@ function hapusSemuaData(){
     historiRegistrasi=[];
     beritaPramuka=[];
     nilaiSiswa=[];
+    agendaPramuka=[];
 
     saveAll();
     renderData();
