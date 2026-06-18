@@ -852,9 +852,9 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
 
         <div class="card hero-card">
           <div class="hero-left">
-            <span class="welcome-chip">PASPRAPATI RFID SYSTEM</span>
+            <span class="welcome-chip">PASPRAPATI DIGITAL SYSTEM</span>
             <h1>Selamat Datang, <span id="welcomeName">User</span></h1>
-            <p>Sistem Absensi, Perizinan, dan Administrasi Anggota Pramuka Berbasis RFID.</p>
+            <p>Sistem Absensi, Perizinan, dan Administrasi Anggota Pramuka Berbasis Digital.</p>
           </div>
           <img src="Pramuka.png" class="hero-logo">
         </div>
