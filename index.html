@@ -782,6 +782,52 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
   line-height:1.45;
 }
 
+
+/* EDIT AKUN + PASSWORD EYE */
+.password-wrap{
+  position:relative;
+  width:100%;
+}
+.password-wrap input{
+  padding-right:52px!important;
+}
+.eye-btn{
+  position:absolute;
+  right:10px;
+  top:50%;
+  transform:translateY(-50%);
+  width:36px;
+  height:36px;
+  border-radius:12px;
+  border:0;
+  background:#e0f2fe;
+  color:#075985;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:0;
+  padding:0;
+  font-size:17px;
+  cursor:pointer;
+}
+.eye-btn:hover{filter:brightness(.96)}
+.profile-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+.profile-info{
+  background:linear-gradient(135deg,#eff6ff,#e0f2fe);
+  border:1px solid #bae6fd;
+  border-radius:22px;
+  padding:18px;
+  margin-bottom:18px;
+  color:#075985;
+}
+.profile-info h3{margin:0 0 8px;color:#075985}
+.profile-info p{margin:5px 0;color:#0369a1}
+@media(max-width:700px){.profile-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 
@@ -802,7 +848,7 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
     <h2>Login PASPRAPATI</h2>
 
     <input type="text" id="loginUser" placeholder="Username">
-    <input type="password" id="loginPass" placeholder="Password">
+    <div class="password-wrap"><input type="password" id="loginPass" placeholder="Password"><button type="button" class="eye-btn" onclick="togglePassword('loginPass',this)">👁️</button></div>
     <button onclick="login()" class="btn-blue" style="width:100%;margin-bottom:12px;">Login Manual Siswa / Guru / BPH</button>
 
     <div class="rfid-login-box" onclick="focusLoginRFID()">
@@ -822,7 +868,7 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
     <h2>Registrasi Akun</h2>
     <input type="text" id="regUser" placeholder="Buat username">
     <input type="text" id="regFullName" placeholder="Nama lengkap">
-    <input type="password" id="regPass" placeholder="Buat password">
+    <div class="password-wrap"><input type="password" id="regPass" placeholder="Buat password"><button type="button" class="eye-btn" onclick="togglePassword('regPass',this)">👁️</button></div>
     <select id="regRole" onchange="updateRegisterRFIDPlaceholder()">
       <option value="siswa">Siswa</option>
       <option value="guru">Guru</option>
@@ -860,6 +906,7 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
 
     <div class="nav">
       <button onclick="showPage('dashboardPage',this)"><span class="nav-icon">🏠</span> Dashboard</button>
+      <button onclick="showPage('editAkunPage',this)"><span class="nav-icon">👤</span> Edit Akun</button>
       <button id="btnAbsen" onclick="showPage('absenPage',this)"><span class="nav-icon">📡</span> Absen RFID</button>
       <button id="btnDataSiswa" onclick="showPage('siswaPage',this)">
         <span class="nav-icon">👥</span> Data Siswa
@@ -1198,6 +1245,48 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
         <div id="listBerita"></div>
       </div>
 
+      <div id="editAkunPage" class="card hidden">
+        <h2>Edit Akun</h2>
+        <div class="profile-info">
+          <h3>Profil Aktif</h3>
+          <p>Nama: <b id="profileInfoName">-</b></p>
+          <p>Username: <b id="profileInfoUsername">-</b></p>
+          <p>Role: <b id="profileInfoRole">-</b></p>
+          <p style="font-size:13px;margin-top:10px;">Kosongkan password baru kalau tidak ingin mengganti password.</p>
+        </div>
+
+        <div class="profile-grid">
+          <div>
+            <label>Username Baru</label>
+            <input type="text" id="editUsername" placeholder="Username baru">
+          </div>
+          <div>
+            <label>Nama Lengkap Baru</label>
+            <input type="text" id="editFullName" placeholder="Nama lengkap baru">
+          </div>
+        </div>
+
+        <label>Password Lama</label>
+        <div class="password-wrap">
+          <input type="password" id="editOldPass" placeholder="Masukkan password lama">
+          <button type="button" class="eye-btn" onclick="togglePassword('editOldPass',this)">👁️</button>
+        </div>
+
+        <label>Password Baru</label>
+        <div class="password-wrap">
+          <input type="password" id="editNewPass" placeholder="Password baru, opsional">
+          <button type="button" class="eye-btn" onclick="togglePassword('editNewPass',this)">👁️</button>
+        </div>
+
+        <label>Ulangi Password Baru</label>
+        <div class="password-wrap">
+          <input type="password" id="editConfirmPass" placeholder="Ulangi password baru">
+          <button type="button" class="eye-btn" onclick="togglePassword('editConfirmPass',this)">👁️</button>
+        </div>
+
+        <button class="btn-blue" onclick="simpanEditAkun()">Simpan Perubahan Akun</button>
+      </div>
+
       <div id="historiRegistrasiPage" class="card hidden">
         <h2>Histori Registrasi Akun</h2>
         <p style="color:#64748b;margin-top:-8px;">Daftar akun siswa/guru yang pernah melakukan registrasi.</p>
@@ -1315,6 +1404,7 @@ function refreshAllViews(){
   try{ renderAcc(); }catch(e){}
   try{ renderData(); }catch(e){}
   try{ renderHistoriRegistrasi(); }catch(e){}
+  try{ renderEditAkun(); }catch(e){}
   try{ renderRegisterHistoryPreview(); }catch(e){}
 }
 
@@ -1455,6 +1545,110 @@ function showError(msg){
 }
 function focusLoginRFID(){setTimeout(()=>document.getElementById("loginRFID").focus(),50)}
 function focusAbsenRFID(){setTimeout(()=>document.getElementById("rfidAbsen").focus(),50)}
+
+
+function togglePassword(inputId, btn){
+  const input = document.getElementById(inputId);
+  if(!input) return;
+  const isPassword = input.type === "password";
+  input.type = isPassword ? "text" : "password";
+  if(btn) btn.innerText = isPassword ? "🙈" : "👁️";
+}
+
+function renderEditAkun(){
+  if(!currentUser) return;
+  const name = currentUser.fullName || currentUser.username || "-";
+  const username = currentUser.username || "-";
+  const role = currentUser.role || "-";
+
+  const profileName = document.getElementById("profileInfoName");
+  const profileUsername = document.getElementById("profileInfoUsername");
+  const profileRole = document.getElementById("profileInfoRole");
+  const editUsername = document.getElementById("editUsername");
+  const editFullName = document.getElementById("editFullName");
+
+  if(profileName) profileName.innerText = name;
+  if(profileUsername) profileUsername.innerText = username;
+  if(profileRole) profileRole.innerText = role;
+  if(editUsername) editUsername.value = username;
+  if(editFullName) editFullName.value = name;
+}
+
+async function simpanEditAkun(){
+  await ensureCloudLoaded();
+  if(!currentUser){showError("Silakan login terlebih dahulu");return;}
+
+  const oldUsername = String(currentUser.username || "").trim();
+  const oldFullName = String(currentUser.fullName || "").trim();
+  const newUsername = document.getElementById("editUsername").value.trim();
+  const newFullName = document.getElementById("editFullName").value.trim();
+  const oldPass = document.getElementById("editOldPass").value.trim();
+  const newPass = document.getElementById("editNewPass").value.trim();
+  const confirmPass = document.getElementById("editConfirmPass").value.trim();
+
+  if(!newUsername || !newFullName){showError("Username dan nama lengkap wajib diisi");return;}
+  if(!oldPass){showError("Password lama wajib diisi untuk menyimpan perubahan");return;}
+  if(oldPass !== String(currentUser.password || "")){showError("Password lama salah");return;}
+  if(users.some(u => String(u.username || "").trim() === newUsername && String(u.username || "").trim() !== oldUsername)){
+    showError("Username baru sudah dipakai akun lain");
+    return;
+  }
+  if(newPass || confirmPass){
+    if(newPass.length < 4){showError("Password baru minimal 4 karakter");return;}
+    if(newPass !== confirmPass){showError("Konfirmasi password baru tidak sama");return;}
+  }
+
+  const idx = users.findIndex(u => String(u.username || "").trim() === oldUsername);
+  if(idx < 0){showError("Akun tidak ditemukan");return;}
+
+  users[idx].username = newUsername;
+  users[idx].fullName = newFullName;
+  if(newPass) users[idx].password = newPass;
+  currentUser = users[idx];
+
+  siswa = siswa.map(s => {
+    const matchUsername = String(s.username || "").trim() === oldUsername;
+    const matchName = String(s.nama || "").trim().toLowerCase() === oldFullName.toLowerCase();
+    if(matchUsername || (currentUser.role === "siswa" && matchName)){
+      return {...s, username:newUsername, nama:newFullName};
+    }
+    return s;
+  });
+
+  dokumenSiswa = dokumenSiswa.map(d => {
+    if(String(d.username || "").trim() === oldUsername || String(d.nama || "").trim().toLowerCase() === oldFullName.toLowerCase()){
+      return {...d, username:newUsername, nama:newFullName};
+    }
+    return d;
+  });
+
+  historiRegistrasi = historiRegistrasi.map(h => {
+    if(String(h.username || "").trim() === oldUsername){
+      return {...h, username:newUsername, fullName:newFullName, terakhirDiubah:new Date().toLocaleString("id-ID")};
+    }
+    return h;
+  });
+
+  saveUsers();
+  saveAll();
+
+  const displayName = currentUser.fullName || currentUser.username;
+  const welcomeName = document.getElementById("welcomeName");
+  if(welcomeName) welcomeName.innerText = displayName;
+  const activeUserText = document.getElementById("activeUserText");
+  if(activeUserText) activeUserText.innerText = displayName;
+
+  document.getElementById("editOldPass").value = "";
+  document.getElementById("editNewPass").value = "";
+  document.getElementById("editConfirmPass").value = "";
+
+  renderEditAkun();
+  renderListSiswa();
+  renderDokumenSiswa();
+  renderHistoriRegistrasi();
+  renderRegisterHistoryPreview();
+  showSuccess("Akun berhasil diperbarui");
+}
 
 function showRegister(){
   document.getElementById("loginPage").classList.add("hidden");
@@ -1662,6 +1856,7 @@ function masukAplikasi(user){
   renderDashboardBerita();
   renderStudentNilaiProgress();
   updateNilaiDashboardVisibility();
+  renderEditAkun();
   showPage("dashboardPage");
 }
 function logout(){
@@ -1708,7 +1903,7 @@ function showPage(id,btn){
     return;
   }
 
-  const pages=["dashboardPage","absenPage","siswaPage","nilaiPage","uploadDokumenPage","kelolaBeritaPage","sakitPage","izinPage","accPage","historiRegistrasiPage","riwayatPage"];
+  const pages=["dashboardPage","editAkunPage","absenPage","siswaPage","nilaiPage","uploadDokumenPage","kelolaBeritaPage","sakitPage","izinPage","accPage","historiRegistrasiPage","riwayatPage"];
   pages.forEach(page=>document.getElementById(page).classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
 
@@ -1717,6 +1912,7 @@ function showPage(id,btn){
 
   const titleMap={
     dashboardPage:"Dashboard",
+    editAkunPage:"Edit Akun",
     absenPage:"Absen RFID",
     siswaPage:"Data Siswa",
     nilaiPage:"Input Nilai",
@@ -1740,6 +1936,7 @@ function showPage(id,btn){
     renderStudentNilaiProgress();
   }
 
+  if(id==="editAkunPage") renderEditAkun();
   if(id==="riwayatPage") renderData();
   if(id==="accPage") renderAcc();
   if(id==="historiRegistrasiPage") renderHistoriRegistrasi();
