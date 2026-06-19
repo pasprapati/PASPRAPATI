@@ -2009,16 +2009,13 @@ function masukAplikasi(user){
   const displayName = currentUser.fullName || currentUser.username;
   const welcomeName = document.getElementById("welcomeName");
   if(welcomeName) welcomeName.innerText = displayName;
-  document.getElementById("activeUserText").innerText = displayName;
-  document.getElementById("activeRoleText").innerText = isGuru ? "Teacher" : (isBPH ? "BPH" : "Student");
 
-  document.getElementById("btnAbsen").style.display = isGuru ? "flex" : "none";
-  document.getElementById("btnAccIzin").style.display = isGuru ? "flex" : "none";
-  document.getElementById("btnDataSiswa").style.display = isGuru ? "flex" : "none";
-  document.getElementById("btnInputNilai").style.display = isGuru ? "flex" : "none";
-  document.getElementById("btnKelolaBerita").style.display = (isGuru || isBPH) ? "flex" : "none";
-  document.getElementById("btnAgenda").style.display = "flex";
-  document.getElementById("btnHistoriRegistrasi").style.display = isGuru ? "flex" : "none";
+  const activeUserText = document.getElementById("activeUserText");
+  const activeRoleText = document.getElementById("activeRoleText");
+  if(activeUserText) activeUserText.innerText = displayName;
+  if(activeRoleText) activeRoleText.innerText = isGuru ? "Teacher" : (isBPH ? "BPH" : "Student");
+
+  aturMenuRole();
 
   if(currentUser.role === "siswa" || currentUser.role === "bph"){
     setTimeout(()=>{
@@ -2038,6 +2035,47 @@ function masukAplikasi(user){
   renderEditAkun();
   showPage("dashboardPage");
   renderGuruPengajuan();
+}
+
+function aturMenuRole(){
+  const role = currentUser?.role || "";
+  const setMenu = (id, show) => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = show ? "flex" : "none";
+  };
+
+  // Reset semua menu khusus supaya tidak kebawa dari role sebelumnya
+  setMenu("btnAbsen", false);
+  setMenu("btnDataSiswa", false);
+  setMenu("btnInputNilai", false);
+  setMenu("btnUploadDokumen", false);
+  setMenu("btnAgenda", false);
+  setMenu("btnKelolaBerita", false);
+  setMenu("btnAccIzin", false);
+  setMenu("btnHistoriRegistrasi", false);
+
+  const guruCard = document.getElementById("guruPengajuanCard");
+
+  if(role === "guru"){
+    // Guru: fitur pengelolaan lengkap
+    setMenu("btnAbsen", true);
+    setMenu("btnDataSiswa", true);
+    setMenu("btnInputNilai", true);
+    setMenu("btnAgenda", true);
+    setMenu("btnKelolaBerita", true);
+    setMenu("btnAccIzin", true);
+    setMenu("btnHistoriRegistrasi", true);
+    if(guruCard) guruCard.style.display = "block";
+  }else if(role === "bph"){
+    // BPH: upload dokumen dan kelola berita saja
+    setMenu("btnUploadDokumen", true);
+    setMenu("btnKelolaBerita", true);
+    if(guruCard) guruCard.style.display = "none";
+  }else{
+    // Siswa: hanya upload dokumen, izin, dashboard, edit akun, dan riwayat
+    setMenu("btnUploadDokumen", true);
+    if(guruCard) guruCard.style.display = "none";
+  }
 }
 function logout(){
   currentUser=null;
@@ -2083,6 +2121,11 @@ function showPage(id,btn){
     return;
   }
 
+  if(id === "agendaPage" && currentUser.role !== "guru"){
+    showError("Agenda hanya bisa diatur oleh guru. Siswa melihat agenda dari dashboard.");
+    return;
+  }
+
   const pages=["dashboardPage","editAkunPage","absenPage","siswaPage","nilaiPage","agendaPage","uploadDokumenPage","kelolaBeritaPage","sakitPage","izinPage","accPage","historiRegistrasiPage","riwayatPage"];
   pages.forEach(page=>document.getElementById(page).classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
@@ -2116,6 +2159,8 @@ function showPage(id,btn){
     renderDashboardAgenda();
     renderKelolaBerita();
     renderStudentNilaiProgress();
+    renderGuruPengajuan();
+    aturMenuRole();
   }
 
   if(id==="editAkunPage") renderEditAkun();
