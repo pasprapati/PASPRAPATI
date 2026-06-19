@@ -1138,10 +1138,17 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
   }
 }
 
+/* CEGAH LOGIN MUNCUL SEKILAS SAAT REFRESH */
+body.auth-loading #loginPage,
+body.auth-loading #registerPage,
+body.auth-loading #appPage{
+  display:none!important;
+}
+
 </style>
 </head>
 
-<body>
+<body class="auth-loading">
 
 <div class="popup" id="popupSuccess">
   <div class="popup-box">
@@ -2256,9 +2263,12 @@ async function loginDenganRFID(uid){
 
   setTimeout(()=>loginLock=false,1200);
 }
-function masukAplikasi(user){
+function masukAplikasi(user, targetPage){
   currentUser = user;
-  try{ localStorage.setItem("pasprapati_login_aktif", JSON.stringify({username:user.username, role:user.role})); }catch(e){}
+  try{
+    localStorage.setItem("pasprapati_login_aktif", JSON.stringify({username:user.username, role:user.role}));
+    localStorage.setItem("pasprapati_current_user", JSON.stringify(user));
+  }catch(e){}
 
   document.getElementById("loginPage").classList.add("hidden");
   document.getElementById("registerPage").classList.add("hidden");
@@ -2302,11 +2312,16 @@ function masukAplikasi(user){
   renderStudentNilaiProgress();
   updateNilaiDashboardVisibility();
   renderEditAkun();
-  showPage("dashboardPage");
+  const halamanTujuan = targetPage || localStorage.getItem("pasprapati_last_page") || "dashboardPage";
+  showPage(halamanTujuan);
   renderGuruPengajuan();
 }
 function logout(){
-  try{ localStorage.removeItem("pasprapati_login_aktif"); }catch(e){}
+  try{
+    localStorage.removeItem("pasprapati_login_aktif");
+    localStorage.removeItem("pasprapati_current_user");
+    localStorage.removeItem("pasprapati_last_page");
+  }catch(e){}
   currentUser=null;
   absenLock=false;
   loginLock=false;
@@ -2324,6 +2339,8 @@ function showPage(id,btn){
     showError("Silakan login terlebih dahulu");
     return;
   }
+
+  try{ localStorage.setItem("pasprapati_last_page", id); }catch(e){}
 
   if(id === "siswaPage" && currentUser.role !== "guru"){
     showError("Data siswa hanya bisa dibuka oleh guru");
@@ -4362,7 +4379,8 @@ function autoLoginSetelahRefresh(){
       return false;
     }
 
-    masukAplikasi(found);
+    const lastPage = localStorage.getItem("pasprapati_last_page") || "dashboardPage";
+    masukAplikasi(found, lastPage);
     return true;
   }catch(err){
     console.error("Auto login gagal:", err);
@@ -4403,7 +4421,13 @@ setTimeout(renderChartDashboard,300);
 
 window.addEventListener("load", async()=>{
   await loadCloudData();
-  autoLoginSetelahRefresh();
+  const berhasilAutoLogin = autoLoginSetelahRefresh();
+  document.body.classList.remove("auth-loading");
+  if(!berhasilAutoLogin){
+    document.getElementById("loginPage").classList.remove("hidden");
+    document.getElementById("appPage").classList.add("hidden");
+    focusLoginRFID();
+  }
 });
 </script>
 </body>
