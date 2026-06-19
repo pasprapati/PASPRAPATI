@@ -1009,6 +1009,135 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
   font-size:12px;
 }
 
+
+/* DOWNLOAD SOAL 3D */
+.download-soal-3d{
+  display:grid;
+  grid-template-columns:74px 1fr auto;
+  gap:16px;
+  align-items:center;
+  width:100%;
+  padding:20px;
+  margin:14px 0 8px;
+  border-radius:26px;
+  text-decoration:none!important;
+  color:white!important;
+  background:
+    radial-gradient(circle at top left, rgba(255,255,255,.28), transparent 34%),
+    linear-gradient(145deg,#38bdf8,#0284c7 48%,#075985);
+  box-shadow:
+    0 22px 38px rgba(14,165,233,.30),
+    0 8px 0 rgba(7,89,133,.22),
+    inset 0 1px 0 rgba(255,255,255,.32);
+  transform:perspective(900px) rotateX(0) translateY(0);
+  transform-style:preserve-3d;
+  transition:.25s ease;
+  position:relative;
+  overflow:hidden;
+}
+.download-soal-3d:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(120deg,transparent,rgba(255,255,255,.28),transparent);
+  transform:translateX(-120%);
+  transition:.55s ease;
+}
+.download-soal-3d:hover{
+  transform:perspective(900px) rotateX(6deg) translateY(-6px);
+  box-shadow:
+    0 32px 52px rgba(14,165,233,.42),
+    0 12px 0 rgba(7,89,133,.25),
+    inset 0 1px 0 rgba(255,255,255,.35);
+  filter:none;
+}
+.download-soal-3d:hover:before{
+  transform:translateX(120%);
+}
+.download-soal-icon{
+  width:74px;
+  height:74px;
+  border-radius:22px;
+  display:grid;
+  place-items:center;
+  font-size:34px;
+  background:rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.25);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.35),
+    0 14px 24px rgba(15,23,42,.18);
+  backdrop-filter:blur(10px);
+  transform:translateZ(26px);
+}
+.download-soal-body{
+  transform:translateZ(18px);
+}
+.download-soal-body h3{
+  margin:0 0 6px;
+  color:white!important;
+  font-size:20px;
+  line-height:1.1;
+}
+.download-soal-body p{
+  margin:0;
+  color:#dbeafe;
+  font-size:13px;
+  line-height:1.45;
+}
+.download-soal-badges{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+.download-soal-badge{
+  display:inline-flex;
+  align-items:center;
+  padding:5px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.24);
+  color:white;
+  font-size:11px;
+  font-weight:900;
+}
+.download-soal-arrow{
+  width:52px;
+  height:52px;
+  border-radius:18px;
+  display:grid;
+  place-items:center;
+  font-size:24px;
+  background:rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.24);
+  animation:downloadSoalBounce 1.4s infinite;
+  transform:translateZ(30px);
+}
+@keyframes downloadSoalBounce{
+  0%,100%{transform:translateZ(30px) translateY(0)}
+  50%{transform:translateZ(30px) translateY(7px)}
+}
+.download-soal-empty{
+  padding:16px;
+  border-radius:18px;
+  background:#f8fafc;
+  border:1px dashed #cbd5e1;
+  color:#64748b;
+  font-size:13px;
+}
+@media(max-width:700px){
+  .download-soal-3d{
+    grid-template-columns:1fr;
+    text-align:center;
+  }
+  .download-soal-icon,.download-soal-arrow{
+    margin:auto;
+  }
+  .download-soal-badges{
+    justify-content:center;
+  }
+}
+
 </style>
 </head>
 
@@ -2129,6 +2258,7 @@ async function loginDenganRFID(uid){
 }
 function masukAplikasi(user){
   currentUser = user;
+  try{ localStorage.setItem("pasprapati_login_aktif", JSON.stringify({username:user.username, role:user.role})); }catch(e){}
 
   document.getElementById("loginPage").classList.add("hidden");
   document.getElementById("registerPage").classList.add("hidden");
@@ -2176,6 +2306,7 @@ function masukAplikasi(user){
   renderGuruPengajuan();
 }
 function logout(){
+  try{ localStorage.removeItem("pasprapati_login_aktif"); }catch(e){}
   currentUser=null;
   absenLock=false;
   loginLock=false;
@@ -2791,7 +2922,19 @@ function renderDashboardAssessment(){
           <span class="assessment-status ${jawaban ? (jawaban.status === "Sudah Dikoreksi" ? "done" : "waiting") : status}">${label}</span>
         </div>
         <div class="assessment-actions">
-          ${a.fileSoal ? `<a href="${a.fileSoal}" download="Soal_${a.mapel || 'Assessment'}" class="btn-blue" style="text-decoration:none;color:white;display:inline-block;">Download Soal</a>` : ""}
+          ${a.fileSoal ? `
+            <a href="${a.fileSoal}" download="Soal_${a.mapel || 'Assessment'}" class="download-soal-3d">
+              <div class="download-soal-icon">📄</div>
+              <div class="download-soal-body">
+                <h3>Download Soal</h3>
+                <p>Klik untuk mengunduh soal assessment yang sudah diupload guru.</p>
+                <div class="download-soal-badges">
+                  <span class="download-soal-badge">${a.semester || '-'}</span>
+                  <span class="download-soal-badge">${a.totalSoal || '-'} Soal</span>
+                </div>
+              </div>
+              <div class="download-soal-arrow">⬇️</div>
+            </a>` : ""}
           <button class="btn-blue" onclick="showPage('assessmentPage')">Buka Assessment</button>
         </div>
       </div>`;
@@ -2832,7 +2975,19 @@ function renderAssessmentCard(a, isGuru){
         <span class="assessment-status ${status}">${getAssessmentStatusText(a)}</span>
       </div>
       <div class="assessment-actions">
-        ${a.fileSoal ? `<a href="${a.fileSoal}" download="Soal_${a.mapel || 'Assessment'}" class="btn-blue" style="text-decoration:none;color:white;display:inline-block;">Download Soal</a>` : `<span class="small-text">File soal belum tersedia</span>`}
+        ${a.fileSoal ? `
+          <a href="${a.fileSoal}" download="Soal_${a.mapel || 'Assessment'}" class="download-soal-3d">
+            <div class="download-soal-icon">📄</div>
+            <div class="download-soal-body">
+              <h3>Download Soal</h3>
+              <p>Klik untuk mengunduh file soal. Pastikan dikerjakan sebelum deadline.</p>
+              <div class="download-soal-badges">
+                <span class="download-soal-badge">${a.semester || '-'}</span>
+                <span class="download-soal-badge">${a.totalSoal || '-'} Soal</span>
+              </div>
+            </div>
+            <div class="download-soal-arrow">⬇️</div>
+          </a>` : `<div class="download-soal-empty">File soal belum tersedia</div>`}
         ${isGuru ? `<button class="btn-blue" onclick="editAssessment(${a.id})">Edit Soal</button><button class="btn-red" onclick="hapusAssessment(${a.id})">Hapus</button>` : ""}
       </div>
       ${isGuru ? renderGuruSubmissionList(a, submissions) : renderSiswaSubmissionBox(a, myJawaban, status)}
@@ -4196,6 +4351,26 @@ function updateClock(){
   if(box) box.innerText=now.toLocaleString("id-ID")+" GMT+7";
 }
 
+function autoLoginSetelahRefresh(){
+  try{
+    const saved = JSON.parse(localStorage.getItem("pasprapati_login_aktif") || "null");
+    if(!saved || !saved.username) return false;
+
+    const found = users.find(u => String(u.username || "") === String(saved.username || ""));
+    if(!found){
+      localStorage.removeItem("pasprapati_login_aktif");
+      return false;
+    }
+
+    masukAplikasi(found);
+    return true;
+  }catch(err){
+    console.error("Auto login gagal:", err);
+    localStorage.removeItem("pasprapati_login_aktif");
+    return false;
+  }
+}
+
 document.addEventListener("DOMContentLoaded", function(){
   const loginRFID=document.getElementById("loginRFID");
   if(loginRFID){
@@ -4228,6 +4403,7 @@ setTimeout(renderChartDashboard,300);
 
 window.addEventListener("load", async()=>{
   await loadCloudData();
+  autoLoginSetelahRefresh();
 });
 </script>
 </body>
