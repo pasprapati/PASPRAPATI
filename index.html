@@ -975,6 +975,40 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
 .assessment-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 @media(max-width:700px){.assessment-grid{grid-template-columns:1fr}.assessment-head{flex-direction:column}}
 
+/* RIWAYAT ASSESSMENT */
+.assessment-history-wrap{
+  margin-top:24px;
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:20px;
+  padding:18px;
+}
+.assessment-history-wrap h3{
+  margin:0 0 8px;
+  color:#0f172a;
+}
+.assessment-history-wrap p{
+  margin:0 0 12px;
+  color:#64748b;
+  font-size:13px;
+}
+.assessment-history-table{
+  width:100%;
+  overflow:auto;
+}
+.assessment-history-table table{
+  min-width:720px;
+}
+.nilai-pill{
+  display:inline-block;
+  padding:6px 12px;
+  border-radius:999px;
+  background:#0ea5e9;
+  color:white;
+  font-weight:900;
+  font-size:12px;
+}
+
 </style>
 </head>
 
@@ -1312,6 +1346,14 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
 
         <h3>Daftar Assessment</h3>
         <div id="tableAssessment"></div>
+
+        <div class="assessment-history-wrap">
+          <h3>Riwayat Assessment</h3>
+          <p>Riwayat nilai akan otomatis muncul setelah guru selesai mengoreksi jawaban siswa.</p>
+          <div id="assessmentHistoryTable" class="assessment-history-table">
+            <div class="empty-status">Belum ada riwayat assessment.</div>
+          </div>
+        </div>
       </div>
 
       <div id="agendaPage" class="card hidden">
@@ -1658,6 +1700,7 @@ function refreshAllViews(){
   try{ renderDashboardAgenda(); }catch(e){}
   try{ renderDashboardAssessment(); }catch(e){}
   try{ renderAssessmentPage(); }catch(e){}
+  try{ renderAssessmentHistory(); }catch(e){}
   try{ if(currentUser && currentUser.role !== "guru") renderStudentNilaiProgress(); }catch(e){}
   try{ renderListSiswa(); }catch(e){}
   try{ renderDokumenSiswa(); }catch(e){}
@@ -2762,10 +2805,12 @@ function renderAssessmentPage(){
   if(form) form.style.display = isGuru ? "block" : "none";
   if(!assessmentPramuka || assessmentPramuka.length === 0){
     box.innerHTML = `<div class="empty-status">Belum ada assessment yang diupload.</div>`;
+    renderAssessmentHistory();
     return;
   }
   const data = assessmentPramuka.slice().sort((a,b)=>String(b.tanggalInput||"").localeCompare(String(a.tanggalInput||"")));
   box.innerHTML = data.map(a => renderAssessmentCard(a, isGuru)).join("");
+  renderAssessmentHistory();
 }
 function renderAssessmentCard(a, isGuru){
   const status = getAssessmentStatus(a);
@@ -2836,6 +2881,57 @@ function renderGuruSubmissionList(a, submissions){
       </div>`).join("")}
   </div>`;
 }
+
+function renderAssessmentHistory(){
+  const box = document.getElementById("assessmentHistoryTable");
+  if(!box) return;
+
+  let data = jawabanAssessment
+    .filter(j => j.status === "Sudah Dikoreksi")
+    .map(j => {
+      const assessment = assessmentPramuka.find(a => String(a.id) === String(j.assessmentId)) || {};
+      return {
+        namaAssessment: assessment.mapel || j.namaAssessment || "Assessment",
+        semester: assessment.semester || j.semester || "-",
+        username: j.username || "",
+        namaSiswa: j.nama || j.username || "-",
+        nilai: j.nilai,
+        catatan: j.catatanGuru || "-",
+        tanggalKoreksi: j.tanggalKoreksi || ""
+      };
+    });
+
+  if(currentUser && currentUser.role !== "guru"){
+    data = data.filter(x => String(x.username || "").trim().toLowerCase() === String(currentUser.username || "").trim().toLowerCase());
+  }
+
+  if(data.length === 0){
+    box.innerHTML = `<div class="empty-status">Belum ada riwayat assessment.</div>`;
+    return;
+  }
+
+  data.sort((a,b)=>String(b.tanggalKoreksi||"").localeCompare(String(a.tanggalKoreksi||"")));
+
+  box.innerHTML = `
+    <table>
+      <tr>
+        <th>Nama</th>
+        <th>Semester</th>
+        <th>Nilai</th>
+        <th>Catatan</th>
+      </tr>
+      ${data.map(x=>`
+        <tr>
+          <td>${currentUser && currentUser.role === "guru" ? `<b>${x.namaSiswa}</b><br><span class="small-text">${x.namaAssessment}</span>` : x.namaAssessment}</td>
+          <td>${x.semester}</td>
+          <td><span class="nilai-pill">${x.nilai}</span></td>
+          <td>${x.catatan || "-"}</td>
+        </tr>
+      `).join("")}
+    </table>
+  `;
+}
+
 async function simpanAssessment(){
   if(!currentUser || currentUser.role !== "guru"){
     showError("Hanya guru yang bisa upload assessment");return;
@@ -2865,7 +2961,7 @@ async function simpanAssessment(){
   if(!data.fileSoal){ showError("File soal wajib diupload"); return; }
   if(idEdit){ assessmentPramuka = assessmentPramuka.map(a => String(a.id) === String(idEdit) ? data : a); showSuccess("Assessment berhasil diperbarui"); }
   else{ assessmentPramuka.push(data); showSuccess("Assessment berhasil diupload dan muncul di dashboard siswa"); }
-  saveAll(); batalEditAssessment(); renderAssessmentPage(); renderDashboardAssessment(); renderData();
+  saveAll(); batalEditAssessment(); renderAssessmentPage(); renderAssessmentHistory(); renderDashboardAssessment(); renderData();
 }
 function editAssessment(id){
   if(!currentUser || currentUser.role !== "guru") return;
@@ -2890,7 +2986,7 @@ function hapusAssessment(id){
   assessmentPramuka = assessmentPramuka.filter(a => a.id !== id);
   jawabanAssessment = jawabanAssessment.filter(j => j.assessmentId !== id);
   nilaiSiswa = nilaiSiswa.filter(n => String(n.assessmentId||"") !== String(id));
-  saveAll(); renderAssessmentPage(); renderDashboardAssessment(); renderData(); renderStudentNilaiProgress();
+  saveAll(); renderAssessmentPage(); renderAssessmentHistory(); renderDashboardAssessment(); renderData(); renderStudentNilaiProgress();
   showSuccess("Assessment berhasil dihapus");
 }
 async function uploadJawabanAssessment(id){
@@ -2913,7 +3009,7 @@ async function uploadJawabanAssessment(id){
     status:"Menunggu Koreksi", nilai:"", catatanGuru:"",
     tanggalUpload:new Date().toLocaleString("id-ID")
   });
-  saveAll(); renderAssessmentPage(); renderDashboardAssessment(); showSuccess("Jawaban berhasil dikirim");
+  saveAll(); renderAssessmentPage(); renderAssessmentHistory(); renderDashboardAssessment(); showSuccess("Jawaban berhasil dikirim");
 }
 function koreksiJawabanAssessment(jawabanId){
   if(!currentUser || currentUser.role !== "guru") return;
@@ -2929,7 +3025,7 @@ function koreksiJawabanAssessment(jawabanId){
     tanggalKoreksi:new Date().toLocaleString("id-ID")
   };
   syncNilaiFromAssessment(jawabanAssessment[idx]);
-  saveAll(); renderAssessmentPage(); renderDashboardAssessment(); renderStudentNilaiProgress(); renderNilaiTable(); renderChartDashboard();
+  saveAll(); renderAssessmentPage(); renderAssessmentHistory(); renderDashboardAssessment(); renderStudentNilaiProgress(); renderNilaiTable(); renderChartDashboard();
   showSuccess("Jawaban berhasil dikoreksi. Nilai otomatis masuk ke Nilai Siswa.");
 }
 
