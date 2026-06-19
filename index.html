@@ -957,6 +957,24 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
 .profile-info p{margin:5px 0;color:#0369a1}
 @media(max-width:700px){.profile-grid{grid-template-columns:1fr}}
 
+
+/* ASSESSMENT / UJIAN SEMESTER */
+.assessment-dashboard-card{background:linear-gradient(180deg,#ffffff,#f8fafc)}
+.assessment-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.assessment-form{background:#f8fafc;border:1px solid #e2e8f0;border-radius:20px;padding:18px;margin-bottom:18px}
+.assessment-card{background:white;border:1px solid #e2e8f0;border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:0 10px 22px rgba(15,23,42,.06);position:relative;overflow:hidden}
+.assessment-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:7px;background:#f59e0b}
+.assessment-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:10px}
+.assessment-title{font-size:18px;font-weight:900;color:#0f172a;margin-bottom:5px}
+.assessment-meta{font-size:13px;color:#475569;line-height:1.65}
+.assessment-tag{display:inline-block;padding:6px 11px;border-radius:999px;background:#fff7ed;color:#ea580c;font-weight:900;font-size:12px;margin-bottom:8px}
+.assessment-status{display:inline-block;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:900;color:white;background:#64748b}
+.assessment-status.open{background:#22c55e}.assessment-status.closed{background:#ef4444}.assessment-status.done{background:#0ea5e9}.assessment-status.waiting{background:#f59e0b}
+.submission-box{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:16px;padding:14px;margin-top:12px}
+.submission-card{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:14px;margin-bottom:12px}
+.assessment-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+@media(max-width:700px){.assessment-grid{grid-template-columns:1fr}.assessment-head{flex-direction:column}}
+
 </style>
 </head>
 
@@ -1036,6 +1054,7 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
     <div class="nav">
       <button onclick="showPage('dashboardPage',this)"><span class="nav-icon">🏠</span> Dashboard</button>
       <button onclick="showPage('editAkunPage',this)"><span class="nav-icon">👤</span> Edit Akun</button>
+      <button id="btnAssessment" onclick="showPage('assessmentPage',this)"><span class="nav-icon">📝</span> Assessment</button>
       <button id="btnAbsen" onclick="showPage('absenPage',this)"><span class="nav-icon">📡</span> Absen RFID</button>
       <button id="btnDataSiswa" onclick="showPage('siswaPage',this)">
         <span class="nav-icon">👥</span> Data Siswa
@@ -1179,6 +1198,12 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
           <div id="dashboardAgenda" class="agenda-list"></div>
         </div>
 
+        <div class="card assessment-dashboard-card" id="assessmentDashboardSection">
+          <h2>Assessment / Ujian Semester</h2>
+          <p style="color:#64748b;margin-top:-8px;">Soal yang sudah diupload guru akan muncul di sini.</p>
+          <div id="dashboardAssessment"></div>
+        </div>
+
         <div class="card berita-dashboard-card" id="beritaDashboardSection">
           <h2>Berita Pramuka Terbaru</h2>
           <p style="color:#64748b;margin-top:-8px;">Berita terbaru dari Guru/BPH akan tampil di sini.</p>
@@ -1236,6 +1261,59 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
       </div>
 
       
+
+      <div id="assessmentPage" class="card hidden">
+        <h2>Assessment / Ujian Per Semester</h2>
+        <p style="color:#64748b;margin-top:-8px;">Guru bisa upload soal dan koreksi jawaban. Siswa bisa download soal dan upload jawaban.</p>
+
+        <div id="formAssessmentGuru" class="assessment-form">
+          <input type="hidden" id="editAssessmentId">
+          <div class="assessment-grid">
+            <div>
+              <label>Mata Pelajaran / Materi</label>
+              <input type="text" id="assessmentMapel" placeholder="Contoh: Marketing Management">
+            </div>
+            <div>
+              <label>Semester</label>
+              <select id="assessmentSemester">
+                <option value="Semester 1">Semester 1</option>
+                <option value="Semester 2">Semester 2</option>
+                <option value="Final Exam">Final Exam</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="assessment-grid">
+            <div>
+              <label>Tanggal Mulai</label>
+              <input type="date" id="assessmentStart">
+            </div>
+            <div>
+              <label>Deadline</label>
+              <input type="date" id="assessmentDue">
+            </div>
+          </div>
+
+          <div class="assessment-grid">
+            <div>
+              <label>Total Soal</label>
+              <input type="number" id="assessmentTotalSoal" placeholder="Contoh: 3" min="1">
+            </div>
+            <div>
+              <label>Upload File Soal</label>
+              <input type="file" id="assessmentFileSoal" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+            </div>
+          </div>
+
+          <textarea id="assessmentInstruksi" placeholder="Instruksi pengerjaan, contoh: Kerjakan secara individu dan upload jawaban sebelum deadline."></textarea>
+          <button class="btn-blue" onclick="simpanAssessment()">Simpan / Upload Soal</button>
+          <button class="btn-gray" onclick="batalEditAssessment()">Batal Edit</button>
+        </div>
+
+        <h3>Daftar Assessment</h3>
+        <div id="tableAssessment"></div>
+      </div>
+
       <div id="agendaPage" class="card hidden">
         <h2>Agenda Pramuka</h2>
         <p style="color:#64748b;margin-top:-8px;">Guru bisa mengatur jadwal agenda. Siswa hanya melihat notifikasi agenda di dashboard.</p>
@@ -1472,6 +1550,7 @@ input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4p
 
         <h3>Data Siswa</h3><div id="tableSiswa"></div>
         <h3>Riwayat Absensi</h3><div id="tableAbsen"></div>
+        <h3>Assessment</h3><div id="tableAssessmentRiwayat"></div>
         <h3>Agenda</h3><div id="tableAgendaRiwayat"></div>
         <h3>Izin Sakit</h3><div id="tableSakit"></div>
         <h3>Izin Lainnya</h3><div id="tableIzin"></div>
@@ -1524,6 +1603,8 @@ function saveLocalOnly(){
   localStorage.setItem("pasprapati_berita", JSON.stringify(beritaPramuka));
   localStorage.setItem("pasprapati_nilai_siswa", JSON.stringify(nilaiSiswa));
   localStorage.setItem("pasprapati_agenda", JSON.stringify(agendaPramuka));
+  localStorage.setItem("pasprapati_assessment", JSON.stringify(assessmentPramuka));
+  localStorage.setItem("pasprapati_jawaban_assessment", JSON.stringify(jawabanAssessment));
 }
 
 async function saveCloudData(){
@@ -1541,6 +1622,8 @@ async function saveCloudData(){
       beritaPramuka: cleanForFirestore(beritaPramuka),
       nilaiSiswa: cleanForFirestore(nilaiSiswa),
       agendaPramuka: cleanForFirestore(agendaPramuka),
+      assessmentPramuka: cleanForFirestore(assessmentPramuka),
+      jawabanAssessment: cleanForFirestore(jawabanAssessment),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, {merge:true});
   }catch(err){
@@ -1562,6 +1645,8 @@ function applyCloudData(data){
   beritaPramuka = Array.isArray(data.beritaPramuka) ? data.beritaPramuka : beritaPramuka;
   nilaiSiswa = Array.isArray(data.nilaiSiswa) ? data.nilaiSiswa : nilaiSiswa;
   agendaPramuka = Array.isArray(data.agendaPramuka) ? data.agendaPramuka : agendaPramuka;
+  assessmentPramuka = Array.isArray(data.assessmentPramuka) ? data.assessmentPramuka : assessmentPramuka;
+  jawabanAssessment = Array.isArray(data.jawabanAssessment) ? data.jawabanAssessment : jawabanAssessment;
   saveLocalOnly();
 }
 
@@ -1571,6 +1656,8 @@ function refreshAllViews(){
   try{ renderStatusIzinSiswa(); }catch(e){}
   try{ renderDashboardBerita(); }catch(e){}
   try{ renderDashboardAgenda(); }catch(e){}
+  try{ renderDashboardAssessment(); }catch(e){}
+  try{ renderAssessmentPage(); }catch(e){}
   try{ if(currentUser && currentUser.role !== "guru") renderStudentNilaiProgress(); }catch(e){}
   try{ renderListSiswa(); }catch(e){}
   try{ renderDokumenSiswa(); }catch(e){}
@@ -1684,6 +1771,8 @@ let historiRegistrasi = JSON.parse(localStorage.getItem("pasprapati_histori_regi
 let beritaPramuka = JSON.parse(localStorage.getItem("pasprapati_berita")) || [];
 let nilaiSiswa = JSON.parse(localStorage.getItem("pasprapati_nilai_siswa")) || [];
 let agendaPramuka = JSON.parse(localStorage.getItem("pasprapati_agenda")) || [];
+let assessmentPramuka = JSON.parse(localStorage.getItem("pasprapati_assessment")) || [];
+let jawabanAssessment = JSON.parse(localStorage.getItem("pasprapati_jawaban_assessment")) || [];
 let absenLock = false;
 let loginLock = false;
 let barChartPasprapati;
@@ -2009,13 +2098,19 @@ function masukAplikasi(user){
   const displayName = currentUser.fullName || currentUser.username;
   const welcomeName = document.getElementById("welcomeName");
   if(welcomeName) welcomeName.innerText = displayName;
-
   const activeUserText = document.getElementById("activeUserText");
   const activeRoleText = document.getElementById("activeRoleText");
   if(activeUserText) activeUserText.innerText = displayName;
   if(activeRoleText) activeRoleText.innerText = isGuru ? "Teacher" : (isBPH ? "BPH" : "Student");
 
-  aturMenuRole();
+  document.getElementById("btnAbsen").style.display = isGuru ? "flex" : "none";
+  document.getElementById("btnAccIzin").style.display = isGuru ? "flex" : "none";
+  document.getElementById("btnDataSiswa").style.display = isGuru ? "flex" : "none";
+  document.getElementById("btnInputNilai").style.display = isGuru ? "flex" : "none";
+  document.getElementById("btnKelolaBerita").style.display = (isGuru || isBPH) ? "flex" : "none";
+  document.getElementById("btnAgenda").style.display = isGuru ? "flex" : "none";
+  document.getElementById("btnAssessment").style.display = "flex";
+  document.getElementById("btnHistoriRegistrasi").style.display = isGuru ? "flex" : "none";
 
   if(currentUser.role === "siswa" || currentUser.role === "bph"){
     setTimeout(()=>{
@@ -2030,52 +2125,12 @@ function masukAplikasi(user){
   renderChartDashboard();
   renderStatusIzinSiswa();
   renderDashboardBerita();
+  renderDashboardAssessment();
   renderStudentNilaiProgress();
   updateNilaiDashboardVisibility();
   renderEditAkun();
   showPage("dashboardPage");
   renderGuruPengajuan();
-}
-
-function aturMenuRole(){
-  const role = currentUser?.role || "";
-  const setMenu = (id, show) => {
-    const el = document.getElementById(id);
-    if(el) el.style.display = show ? "flex" : "none";
-  };
-
-  // Reset semua menu khusus supaya tidak kebawa dari role sebelumnya
-  setMenu("btnAbsen", false);
-  setMenu("btnDataSiswa", false);
-  setMenu("btnInputNilai", false);
-  setMenu("btnUploadDokumen", false);
-  setMenu("btnAgenda", false);
-  setMenu("btnKelolaBerita", false);
-  setMenu("btnAccIzin", false);
-  setMenu("btnHistoriRegistrasi", false);
-
-  const guruCard = document.getElementById("guruPengajuanCard");
-
-  if(role === "guru"){
-    // Guru: fitur pengelolaan lengkap
-    setMenu("btnAbsen", true);
-    setMenu("btnDataSiswa", true);
-    setMenu("btnInputNilai", true);
-    setMenu("btnAgenda", true);
-    setMenu("btnKelolaBerita", true);
-    setMenu("btnAccIzin", true);
-    setMenu("btnHistoriRegistrasi", true);
-    if(guruCard) guruCard.style.display = "block";
-  }else if(role === "bph"){
-    // BPH: upload dokumen dan kelola berita saja
-    setMenu("btnUploadDokumen", true);
-    setMenu("btnKelolaBerita", true);
-    if(guruCard) guruCard.style.display = "none";
-  }else{
-    // Siswa: hanya upload dokumen, izin, dashboard, edit akun, dan riwayat
-    setMenu("btnUploadDokumen", true);
-    if(guruCard) guruCard.style.display = "none";
-  }
 }
 function logout(){
   currentUser=null;
@@ -2121,12 +2176,7 @@ function showPage(id,btn){
     return;
   }
 
-  if(id === "agendaPage" && currentUser.role !== "guru"){
-    showError("Agenda hanya bisa diatur oleh guru. Siswa melihat agenda dari dashboard.");
-    return;
-  }
-
-  const pages=["dashboardPage","editAkunPage","absenPage","siswaPage","nilaiPage","agendaPage","uploadDokumenPage","kelolaBeritaPage","sakitPage","izinPage","accPage","historiRegistrasiPage","riwayatPage"];
+  const pages=["dashboardPage","editAkunPage","assessmentPage","absenPage","siswaPage","nilaiPage","agendaPage","uploadDokumenPage","kelolaBeritaPage","sakitPage","izinPage","accPage","historiRegistrasiPage","riwayatPage"];
   pages.forEach(page=>document.getElementById(page).classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
 
@@ -2136,6 +2186,7 @@ function showPage(id,btn){
   const titleMap={
     dashboardPage:"Dashboard",
     editAkunPage:"Edit Akun",
+    assessmentPage:"Assessment",
     absenPage:"Absen RFID",
     siswaPage:"Data Siswa",
     nilaiPage:"Input Nilai",
@@ -2157,13 +2208,13 @@ function showPage(id,btn){
     renderStatusIzinSiswa();
     renderDashboardBerita();
     renderDashboardAgenda();
+    renderDashboardAssessment();
     renderKelolaBerita();
     renderStudentNilaiProgress();
-    renderGuruPengajuan();
-    aturMenuRole();
   }
 
   if(id==="editAkunPage") renderEditAkun();
+  if(id==="assessmentPage") renderAssessmentPage();
   if(id==="riwayatPage") renderData();
   if(id==="accPage") renderAcc();
   if(id==="historiRegistrasiPage") renderHistoriRegistrasi();
@@ -2624,6 +2675,264 @@ function renderAcc(){
 }
 
 
+
+function getAssessmentStatus(item){
+  const today = new Date();
+  const due = item.due ? new Date(item.due + "T23:59:59") : null;
+  if(due && today > due) return "closed";
+  return "open";
+}
+function getAssessmentStatusText(item){
+  return getAssessmentStatus(item) === "open" ? "Open" : "Expired";
+}
+function formatTanggalSingkat(tgl){
+  if(!tgl) return "-";
+  try{return new Date(tgl).toLocaleDateString("id-ID",{day:"2-digit",month:"short",year:"numeric"});}
+  catch(e){return tgl;}
+}
+function findJawaban(assessmentId, username){
+  return jawabanAssessment.find(j => String(j.assessmentId) === String(assessmentId) && String(j.username||"").trim().toLowerCase() === String(username||"").trim().toLowerCase());
+}
+function syncNilaiFromAssessment(jawaban){
+  if(!jawaban || jawaban.nilai === "" || jawaban.nilai === undefined || jawaban.nilai === null) return;
+  const assessment = assessmentPramuka.find(a => String(a.id) === String(jawaban.assessmentId));
+  if(!assessment) return;
+  const kelas = jawaban.kelas || "VII";
+  const semester = assessment.semester || "Final Exam";
+  const nama = jawaban.nama || jawaban.username || "-";
+  const existingIndex = nilaiSiswa.findIndex(n =>
+    String(n.nama||"").trim().toLowerCase() === String(nama).trim().toLowerCase() &&
+    String(n.semester||"") === String(semester) &&
+    String(n.sumber||"") === "Assessment" &&
+    String(n.assessmentId||"") === String(assessment.id)
+  );
+  const dataNilai = {
+    id: existingIndex >= 0 ? nilaiSiswa[existingIndex].id : Date.now()+Math.floor(Math.random()*999),
+    nama,
+    kelas,
+    semester,
+    nilai:Number(jawaban.nilai),
+    catatan: jawaban.catatanGuru || `Nilai otomatis dari assessment: ${assessment.mapel || "Ujian"}`,
+    guru: currentUser ? (currentUser.fullName || currentUser.username) : (jawaban.dikoreksiOleh || "Guru"),
+    sumber:"Assessment",
+    assessmentId: assessment.id,
+    tanggalInput: existingIndex >= 0 ? nilaiSiswa[existingIndex].tanggalInput : new Date().toLocaleString("id-ID"),
+    tanggalEdit: existingIndex >= 0 ? new Date().toLocaleString("id-ID") : ""
+  };
+  if(existingIndex >= 0) nilaiSiswa[existingIndex] = dataNilai;
+  else nilaiSiswa.push(dataNilai);
+}
+function renderDashboardAssessment(){
+  const box = document.getElementById("dashboardAssessment");
+  if(!box) return;
+  if(!assessmentPramuka || assessmentPramuka.length === 0){
+    box.innerHTML = `<div class="empty-status">Belum ada assessment yang diupload guru.</div>`;
+    return;
+  }
+  const data = assessmentPramuka.slice().sort((a,b)=>String(b.tanggalInput||"").localeCompare(String(a.tanggalInput||""))).slice(0,3);
+  box.innerHTML = data.map(a=>{
+    const jawaban = currentUser ? findJawaban(a.id, currentUser.username) : null;
+    const status = getAssessmentStatus(a);
+    const label = jawaban ? (jawaban.status === "Sudah Dikoreksi" ? `Nilai: ${jawaban.nilai}` : "Jawaban Terkirim") : getAssessmentStatusText(a);
+    return `
+      <div class="assessment-card">
+        <div class="assessment-head">
+          <div>
+            <div class="assessment-tag">${a.semester || "Final Exam"}</div>
+            <div class="assessment-title">${a.mapel || "Assessment"}</div>
+            <div class="assessment-meta">
+              Mulai: <b>${formatTanggalSingkat(a.start)}</b> • Deadline: <b>${formatTanggalSingkat(a.due)}</b><br>
+              Total Soal: <b>${a.totalSoal || "-"}</b>
+            </div>
+          </div>
+          <span class="assessment-status ${jawaban ? (jawaban.status === "Sudah Dikoreksi" ? "done" : "waiting") : status}">${label}</span>
+        </div>
+        <div class="assessment-actions">
+          ${a.fileSoal ? `<a href="${a.fileSoal}" download="Soal_${a.mapel || 'Assessment'}" class="btn-blue" style="text-decoration:none;color:white;display:inline-block;">Download Soal</a>` : ""}
+          <button class="btn-blue" onclick="showPage('assessmentPage')">Buka Assessment</button>
+        </div>
+      </div>`;
+  }).join("");
+}
+function renderAssessmentPage(){
+  const form = document.getElementById("formAssessmentGuru");
+  const box = document.getElementById("tableAssessment");
+  if(!box) return;
+  const isGuru = currentUser && currentUser.role === "guru";
+  if(form) form.style.display = isGuru ? "block" : "none";
+  if(!assessmentPramuka || assessmentPramuka.length === 0){
+    box.innerHTML = `<div class="empty-status">Belum ada assessment yang diupload.</div>`;
+    return;
+  }
+  const data = assessmentPramuka.slice().sort((a,b)=>String(b.tanggalInput||"").localeCompare(String(a.tanggalInput||"")));
+  box.innerHTML = data.map(a => renderAssessmentCard(a, isGuru)).join("");
+}
+function renderAssessmentCard(a, isGuru){
+  const status = getAssessmentStatus(a);
+  const submissions = jawabanAssessment.filter(j => String(j.assessmentId) === String(a.id));
+  const myJawaban = currentUser ? findJawaban(a.id, currentUser.username) : null;
+  return `
+    <div class="assessment-card">
+      <div class="assessment-head">
+        <div>
+          <div class="assessment-tag">${a.semester || "Final Exam"}</div>
+          <div class="assessment-title">${a.mapel || "Assessment"}</div>
+          <div class="assessment-meta">
+            Mulai: <b>${formatTanggalSingkat(a.start)}</b> • Deadline: <b>${formatTanggalSingkat(a.due)}</b><br>
+            Total Soal: <b>${a.totalSoal || "-"}</b><br>
+            Instruksi: ${a.instruksi || "-"}<br>
+            Dibuat oleh: ${a.dibuatOleh || "Guru"}
+          </div>
+        </div>
+        <span class="assessment-status ${status}">${getAssessmentStatusText(a)}</span>
+      </div>
+      <div class="assessment-actions">
+        ${a.fileSoal ? `<a href="${a.fileSoal}" download="Soal_${a.mapel || 'Assessment'}" class="btn-blue" style="text-decoration:none;color:white;display:inline-block;">Download Soal</a>` : `<span class="small-text">File soal belum tersedia</span>`}
+        ${isGuru ? `<button class="btn-blue" onclick="editAssessment(${a.id})">Edit Soal</button><button class="btn-red" onclick="hapusAssessment(${a.id})">Hapus</button>` : ""}
+      </div>
+      ${isGuru ? renderGuruSubmissionList(a, submissions) : renderSiswaSubmissionBox(a, myJawaban, status)}
+    </div>`;
+}
+function renderSiswaSubmissionBox(a, myJawaban, status){
+  if(myJawaban){
+    return `<div class="submission-box">
+      <b>Jawaban Kamu</b><br>
+      <div class="assessment-meta">
+        Status: <span class="assessment-status ${myJawaban.status === 'Sudah Dikoreksi' ? 'done' : 'waiting'}">${myJawaban.status || 'Terkirim'}</span><br>
+        Tanggal upload: ${myJawaban.tanggalUpload || "-"}<br>
+        ${myJawaban.fileJawaban ? `<a href="${myJawaban.fileJawaban}" download="Jawaban_${a.mapel || 'Assessment'}">Download Jawaban</a><br>` : ""}
+        ${myJawaban.status === "Sudah Dikoreksi" ? `<b>Nilai:</b> ${myJawaban.nilai}<br><b>Catatan Guru:</b> ${myJawaban.catatanGuru || "-"}` : "Menunggu dikoreksi guru."}
+      </div>
+    </div>`;
+  }
+  if(status !== "open"){
+    return `<div class="submission-box small-text">Deadline sudah lewat. Jawaban tidak bisa dikirim.</div>`;
+  }
+  return `<div class="submission-box">
+    <b>Upload Jawaban</b>
+    <input type="file" id="jawabanFile_${a.id}" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+    <textarea id="jawabanCatatan_${a.id}" placeholder="Catatan jawaban, opsional"></textarea>
+    <button class="btn-blue" onclick="uploadJawabanAssessment(${a.id})">Kirim Jawaban</button>
+  </div>`;
+}
+function renderGuruSubmissionList(a, submissions){
+  if(!submissions || submissions.length === 0){
+    return `<div class="submission-box small-text">Belum ada jawaban siswa.</div>`;
+  }
+  return `<div class="submission-box"><b>Jawaban Siswa</b>
+    ${submissions.map(j=>`
+      <div class="submission-card">
+        <div class="assessment-meta">
+          <b>${j.nama || j.username}</b><br>
+          Upload: ${j.tanggalUpload || "-"}<br>
+          Status: <span class="assessment-status ${j.status === 'Sudah Dikoreksi' ? 'done' : 'waiting'}">${j.status || 'Menunggu Koreksi'}</span><br>
+          ${j.fileJawaban ? `<a href="${j.fileJawaban}" download="Jawaban_${j.nama || j.username}">Download Jawaban</a>` : "-"}
+        </div>
+        <div class="assessment-grid" style="margin-top:10px;">
+          <input type="number" id="nilaiJawaban_${j.id}" placeholder="Nilai 0-100" min="0" max="100" value="${j.nilai ?? ''}">
+          <input type="text" id="catatanJawaban_${j.id}" placeholder="Catatan koreksi" value="${j.catatanGuru || ''}">
+        </div>
+        <button class="btn-green" onclick="koreksiJawabanAssessment(${j.id})">Simpan Koreksi</button>
+      </div>`).join("")}
+  </div>`;
+}
+async function simpanAssessment(){
+  if(!currentUser || currentUser.role !== "guru"){
+    showError("Hanya guru yang bisa upload assessment");return;
+  }
+  const idEdit = document.getElementById("editAssessmentId").value;
+  const mapel = document.getElementById("assessmentMapel").value.trim();
+  const semester = document.getElementById("assessmentSemester").value;
+  const start = document.getElementById("assessmentStart").value;
+  const due = document.getElementById("assessmentDue").value;
+  const totalSoal = document.getElementById("assessmentTotalSoal").value;
+  const instruksi = document.getElementById("assessmentInstruksi").value.trim();
+  if(!mapel || !semester || !start || !due || !totalSoal){
+    showError("Mata pelajaran, semester, tanggal mulai, deadline, dan total soal wajib diisi");return;
+  }
+  let fileSoal = "";
+  try{ fileSoal = await fileToBase64(document.getElementById("assessmentFileSoal")); }
+  catch(err){ showError(err); return; }
+  const existing = idEdit ? assessmentPramuka.find(a => String(a.id) === String(idEdit)) : null;
+  const data = {
+    id: idEdit ? Number(idEdit) : Date.now(),
+    mapel, semester, start, due, totalSoal, instruksi,
+    fileSoal: fileSoal || (existing ? existing.fileSoal : ""),
+    dibuatOleh: currentUser.fullName || currentUser.username,
+    tanggalInput: existing ? existing.tanggalInput : new Date().toLocaleString("id-ID"),
+    tanggalEdit: existing ? new Date().toLocaleString("id-ID") : ""
+  };
+  if(!data.fileSoal){ showError("File soal wajib diupload"); return; }
+  if(idEdit){ assessmentPramuka = assessmentPramuka.map(a => String(a.id) === String(idEdit) ? data : a); showSuccess("Assessment berhasil diperbarui"); }
+  else{ assessmentPramuka.push(data); showSuccess("Assessment berhasil diupload dan muncul di dashboard siswa"); }
+  saveAll(); batalEditAssessment(); renderAssessmentPage(); renderDashboardAssessment(); renderData();
+}
+function editAssessment(id){
+  if(!currentUser || currentUser.role !== "guru") return;
+  const a = assessmentPramuka.find(x => x.id === id); if(!a) return;
+  document.getElementById("editAssessmentId").value = a.id;
+  document.getElementById("assessmentMapel").value = a.mapel || "";
+  document.getElementById("assessmentSemester").value = a.semester || "Semester 1";
+  document.getElementById("assessmentStart").value = a.start || "";
+  document.getElementById("assessmentDue").value = a.due || "";
+  document.getElementById("assessmentTotalSoal").value = a.totalSoal || "";
+  document.getElementById("assessmentInstruksi").value = a.instruksi || "";
+  showSuccess("Mode edit assessment aktif. Upload file baru hanya kalau ingin mengganti soal.");
+  document.getElementById("assessmentPage").scrollIntoView({behavior:"smooth"});
+}
+function batalEditAssessment(){
+  ["editAssessmentId","assessmentMapel","assessmentStart","assessmentDue","assessmentTotalSoal","assessmentInstruksi","assessmentFileSoal"].forEach(id=>{const el=document.getElementById(id); if(el) el.value="";});
+  const sem = document.getElementById("assessmentSemester"); if(sem) sem.value="Semester 1";
+}
+function hapusAssessment(id){
+  if(!currentUser || currentUser.role !== "guru") return;
+  if(!confirm("Hapus assessment ini beserta jawaban siswa?")) return;
+  assessmentPramuka = assessmentPramuka.filter(a => a.id !== id);
+  jawabanAssessment = jawabanAssessment.filter(j => j.assessmentId !== id);
+  nilaiSiswa = nilaiSiswa.filter(n => String(n.assessmentId||"") !== String(id));
+  saveAll(); renderAssessmentPage(); renderDashboardAssessment(); renderData(); renderStudentNilaiProgress();
+  showSuccess("Assessment berhasil dihapus");
+}
+async function uploadJawabanAssessment(id){
+  if(!currentUser || currentUser.role === "guru"){
+    showError("Jawaban hanya bisa dikirim oleh siswa/BPH");return;
+  }
+  const assessment = assessmentPramuka.find(a => a.id === id);
+  if(!assessment){showError("Assessment tidak ditemukan");return;}
+  if(getAssessmentStatus(assessment) !== "open"){showError("Deadline sudah lewat");return;}
+  if(findJawaban(id, currentUser.username)){showError("Kamu sudah mengirim jawaban");return;}
+  let fileJawaban = "";
+  try{ fileJawaban = await fileToBase64(document.getElementById("jawabanFile_"+id)); }
+  catch(err){ showError(err); return; }
+  if(!fileJawaban){ showError("File jawaban wajib diupload"); return; }
+  const catatan = document.getElementById("jawabanCatatan_"+id)?.value.trim() || "";
+  const nama = currentUser.fullName || currentUser.username;
+  jawabanAssessment.push({
+    id: Date.now(), assessmentId:id, username:currentUser.username, nama,
+    kelas: currentUser.kelas || "VII", fileJawaban, catatan,
+    status:"Menunggu Koreksi", nilai:"", catatanGuru:"",
+    tanggalUpload:new Date().toLocaleString("id-ID")
+  });
+  saveAll(); renderAssessmentPage(); renderDashboardAssessment(); showSuccess("Jawaban berhasil dikirim");
+}
+function koreksiJawabanAssessment(jawabanId){
+  if(!currentUser || currentUser.role !== "guru") return;
+  const idx = jawabanAssessment.findIndex(j => j.id === jawabanId);
+  if(idx < 0) return;
+  const nilai = Number(document.getElementById("nilaiJawaban_"+jawabanId).value);
+  const catatanGuru = document.getElementById("catatanJawaban_"+jawabanId).value.trim();
+  if(isNaN(nilai) || nilai < 0 || nilai > 100){showError("Nilai harus 0 sampai 100");return;}
+  jawabanAssessment[idx] = {
+    ...jawabanAssessment[idx], nilai, catatanGuru,
+    status:"Sudah Dikoreksi",
+    dikoreksiOleh: currentUser.fullName || currentUser.username,
+    tanggalKoreksi:new Date().toLocaleString("id-ID")
+  };
+  syncNilaiFromAssessment(jawabanAssessment[idx]);
+  saveAll(); renderAssessmentPage(); renderDashboardAssessment(); renderStudentNilaiProgress(); renderNilaiTable(); renderChartDashboard();
+  showSuccess("Jawaban berhasil dikoreksi. Nilai otomatis masuk ke Nilai Siswa.");
+}
+
 function getAgendaColor(jenis){
   if(jenis === "Latihan") return "#f97316";
   if(jenis === "Rapat") return "#16a34a";
@@ -2833,6 +3142,25 @@ function renderData(){
       </tr>
     `).join("")}
   </table>`;
+
+  const assessmentRiwayat = document.getElementById("tableAssessmentRiwayat");
+  if(assessmentRiwayat){
+    assessmentRiwayat.innerHTML=`
+    <table>
+      <tr><th>Mapel</th><th>Semester</th><th>Mulai</th><th>Deadline</th><th>Total Soal</th><th>Jawaban Masuk</th><th>Dibuat Oleh</th></tr>
+      ${assessmentPramuka.map(a=>`
+        <tr>
+          <td>${a.mapel || "-"}</td>
+          <td>${a.semester || "-"}</td>
+          <td>${formatTanggalSingkat(a.start)}</td>
+          <td>${formatTanggalSingkat(a.due)}</td>
+          <td>${a.totalSoal || "-"}</td>
+          <td>${jawabanAssessment.filter(j=>String(j.assessmentId)===String(a.id)).length}</td>
+          <td>${a.dibuatOleh || "-"}</td>
+        </tr>
+      `).join("")}
+    </table>`;
+  }
 
   const agendaRiwayat = document.getElementById("tableAgendaRiwayat");
   if(agendaRiwayat){
@@ -3558,6 +3886,7 @@ async function uploadBerita(){
     batalEditBerita();
     renderDashboardBerita();
     renderDashboardAgenda();
+    renderDashboardAssessment();
     renderKelolaBerita();
 
   }catch(err){
@@ -3700,6 +4029,24 @@ XLSX.utils.book_append_sheet(
   "Agenda"
 );
 
+const wsAssessment =
+  XLSX.utils.json_to_sheet(assessmentPramuka);
+
+XLSX.utils.book_append_sheet(
+  wb,
+  wsAssessment,
+  "Assessment"
+);
+
+const wsJawabanAssessment =
+  XLSX.utils.json_to_sheet(jawabanAssessment);
+
+XLSX.utils.book_append_sheet(
+  wb,
+  wsJawabanAssessment,
+  "Jawaban Assessment"
+);
+
 const tanggal =
   new Date()
   .toISOString()
@@ -3726,6 +4073,8 @@ function hapusSemuaData(){
     localStorage.removeItem("pasprapati_berita");
     localStorage.removeItem("pasprapati_nilai_siswa");
     localStorage.removeItem("pasprapati_agenda");
+    localStorage.removeItem("pasprapati_assessment");
+    localStorage.removeItem("pasprapati_jawaban_assessment");
 
     siswa=[];
     absensi=[];
@@ -3736,6 +4085,8 @@ function hapusSemuaData(){
     beritaPramuka=[];
     nilaiSiswa=[];
     agendaPramuka=[];
+    assessmentPramuka=[];
+    jawabanAssessment=[];
 
     saveAll();
     renderData();
