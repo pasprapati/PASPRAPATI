@@ -1192,6 +1192,7 @@ body.auth-loading #appPage{
       <option value="bph">BPH</option>
     </select>
     <input type="text" id="regLoginRFID" placeholder="UID RFID siswa untuk absen">
+    <p style="margin:-6px 0 12px;color:#64748b;font-size:12px;line-height:1.45;">Catatan: RFID wajib untuk siswa. Guru/BPH boleh kosong dan tetap bisa login manual pakai username & password.</p>
     <button onclick="registerUser()">Daftar</button>
     <button class="btn-red" onclick="showLogin()">Kembali</button>
 
@@ -2111,7 +2112,7 @@ function updateRegisterRFIDPlaceholder(){
   const role = document.getElementById("regRole")?.value || "siswa";
   const input = document.getElementById("regLoginRFID");
   if(!input) return;
-  input.placeholder = role === "siswa" ? "UID RFID siswa untuk absen" : "UID RFID login Guru/BPH";
+  input.placeholder = role === "siswa" ? "UID RFID siswa untuk absen" : "UID RFID login Guru/BPH (opsional, bisa login manual)";
 }
 
 function renderRegisterHistoryPreview(){
@@ -2157,8 +2158,10 @@ async function registerUser(){
     alert("Username, nama lengkap, dan password wajib diisi");
     return;
   }
-  if(!inputRFID){
-    alert(role === "siswa" ? "UID RFID siswa wajib diisi untuk absen" : "RFID login Guru/BPH wajib diisi");
+  /* RFID wajib hanya untuk siswa karena dipakai Absen RFID.
+     Guru/BPH boleh kosong supaya tetap bisa login manual pakai username & password. */
+  if(role === "siswa" && !inputRFID){
+    alert("UID RFID siswa wajib diisi untuk absen");
     return;
   }
   if(users.some(u=>u.username===username)){
@@ -2166,11 +2169,13 @@ async function registerUser(){
     return;
   }
 
-  const rfidDipakaiUser = users.some(u=>String(u.loginRFID||"").trim()===inputRFID || String(u.rfidSiswa||"").trim()===inputRFID);
-  const rfidDipakaiSiswa = siswa.some(s=>String(s.rfid||"").trim()===inputRFID);
-  if(rfidDipakaiUser || rfidDipakaiSiswa){
-    alert("RFID sudah terdaftar");
-    return;
+  if(inputRFID){
+    const rfidDipakaiUser = users.some(u=>String(u.loginRFID||"").trim()===inputRFID || String(u.rfidSiswa||"").trim()===inputRFID);
+    const rfidDipakaiSiswa = siswa.some(s=>String(s.rfid||"").trim()===inputRFID);
+    if(rfidDipakaiUser || rfidDipakaiSiswa){
+      alert("RFID sudah terdaftar");
+      return;
+    }
   }
 
   const tanggalRegistrasi = new Date().toLocaleString("id-ID");
@@ -2238,8 +2243,12 @@ async function login(){
   await ensureCloudLoaded();
   const u=document.getElementById("loginUser").value.trim();
   const p=document.getElementById("loginPass").value.trim();
+
+  /* Login manual berlaku untuk semua role: Siswa, Guru, dan BPH.
+     RFID hanya alternatif login untuk Guru/BPH, bukan kewajiban. */
   const found=users.find(user=>user.username===u && user.password===p);
   if(!found){alert("Username atau password salah");return}
+
   masukAplikasi(found);
   renderGuruPengajuan();
 }
