@@ -1182,6 +1182,20 @@ body.auth-loading #appPage{
   margin-bottom:10px;
 }
 
+
+/* HAPUS RIWAYAT REGISTRASI */
+.btn-reg-delete{
+  background:#dc2626!important;
+  color:white!important;
+  padding:7px 10px!important;
+  border-radius:10px!important;
+  font-size:11px!important;
+  margin:0!important;
+}
+.btn-reg-delete:hover{
+  background:#b91c1c!important;
+}
+
 </style>
 </head>
 
@@ -2143,6 +2157,50 @@ async function simpanEditAkun(){
   showSuccess("Akun berhasil diperbarui");
 }
 
+
+async function hapusRegistrasi(index){
+  await ensureCloudLoaded();
+
+  if(!currentUser || currentUser.role !== "guru"){
+    showError("Hanya guru yang bisa menghapus riwayat registrasi.");
+    return;
+  }
+
+  if(index < 0 || index >= historiRegistrasi.length){
+    showError("Data registrasi tidak ditemukan.");
+    return;
+  }
+
+  const data = historiRegistrasi[index];
+  const username = String(data.username || "").trim();
+  const nama = String(data.fullName || data.nama || "").trim();
+
+  if(!confirm(`Hapus akun registrasi ${nama || username}?`)) return;
+
+  historiRegistrasi.splice(index, 1);
+
+  if(username){
+    users = users.filter(u => String(u.username || "").trim() !== username);
+    siswa = siswa.filter(s => String(s.username || "").trim() !== username);
+    dokumenSiswa = dokumenSiswa.filter(d => String(d.username || "").trim() !== username);
+  }
+
+  if(nama){
+    siswa = siswa.filter(s => String(s.nama || "").trim().toLowerCase() !== nama.toLowerCase());
+    dokumenSiswa = dokumenSiswa.filter(d => String(d.nama || "").trim().toLowerCase() !== nama.toLowerCase());
+  }
+
+  saveUsers();
+  saveAll();
+
+  renderRegisterHistoryPreview();
+  renderHistoriRegistrasi();
+  renderListSiswa();
+  renderData();
+
+  showSuccess("Data registrasi berhasil dihapus.");
+}
+
 function showRegister(){
   document.getElementById("loginPage").classList.add("hidden");
   document.getElementById("registerPage").classList.remove("hidden");
@@ -2166,30 +2224,45 @@ function renderRegisterHistoryPreview(){
   const box = document.getElementById("registerHistoryPreview");
   if(!box) return;
 
-  const data = [...historiRegistrasi].sort((a,b)=>Number(b.id||0)-Number(a.id||0)).slice(0,8);
+  const data = Array.isArray(historiRegistrasi) ? historiRegistrasi : [];
 
   if(data.length === 0){
-    box.innerHTML = `<div style="color:#64748b;text-align:center;padding:10px;">Belum ada riwayat registrasi.</div>`;
+    box.innerHTML = "Belum ada riwayat registrasi.";
     return;
   }
 
-  box.innerHTML = `
-    <table>
+  const rows = data.slice().reverse().map((h, reverseIndex)=>{
+    const realIndex = data.length - 1 - reverseIndex;
+    return `
       <tr>
-        <th>Nama</th>
-        <th>Role</th>
-        <th>RFID</th>
-        <th>Tanggal</th>
+        <td>${h.username || "-"}</td>
+        <td>${h.fullName || h.nama || "-"}</td>
+        <td>${h.role || "-"}</td>
+        <td>${h.loginRFID || h.rfid || "-"}</td>
+        <td>${h.tanggal || h.waktu || h.createdAt || "-"}</td>
+        <td>
+          <button class="btn-reg-delete" onclick="hapusRegistrasi(${realIndex})">
+            Hapus
+          </button>
+        </td>
       </tr>
-      ${data.map(h=>`
+    `;
+  }).join("");
+
+  box.innerHTML = `
+    <div style="overflow:auto;">
+      <table class="reg-history-table">
         <tr>
-          <td>${h.fullName || "-"}</td>
-          <td>${h.role || "-"}</td>
-          <td>${h.rfidSiswa || h.loginRFID || "-"}</td>
-          <td>${h.tanggalRegistrasi || "-"}</td>
+          <th>Username</th>
+          <th>Nama</th>
+          <th>Role</th>
+          <th>RFID</th>
+          <th>Tanggal</th>
+          <th>Aksi</th>
         </tr>
-      `).join("")}
-    </table>
+        ${rows}
+      </table>
+    </div>
   `;
 }
 
@@ -3818,40 +3891,43 @@ function renderHistoriRegistrasi(){
   const box = document.getElementById("tableHistoriRegistrasi");
   if(!box) return;
 
-  const data = [...historiRegistrasi];
+  const data = Array.isArray(historiRegistrasi) ? historiRegistrasi : [];
 
-  users.forEach(u=>{
-    if(!data.some(h=>h.username===u.username)){
-      data.push({
-        id: "default-"+u.username,
-        username:u.username,
-        fullName:u.fullName || u.username,
-        role:u.role,
-        loginRFID:u.loginRFID || "",
-        tanggalRegistrasi:u.tanggalRegistrasi || "Default System"
-      });
-    }
-  });
+  if(data.length === 0){
+    box.innerHTML = `<div class="empty-status">Belum ada histori registrasi.</div>`;
+    return;
+  }
+
+  const rows = data.slice().reverse().map((h, reverseIndex)=>{
+    const realIndex = data.length - 1 - reverseIndex;
+    return `
+      <tr>
+        <td>${h.username || "-"}</td>
+        <td>${h.fullName || h.nama || "-"}</td>
+        <td>${h.role || "-"}</td>
+        <td>${h.loginRFID || h.rfid || "-"}</td>
+        <td>${h.tanggal || h.waktu || h.createdAt || "-"}</td>
+        <td>
+          <button class="btn-reg-delete" onclick="hapusRegistrasi(${realIndex})">
+            Hapus
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("");
 
   box.innerHTML = `
-    <div class="table-wrap">
+    <div style="overflow:auto;">
       <table class="reg-history-table">
         <tr>
-          <th>Nama Lengkap</th>
           <th>Username</th>
+          <th>Nama</th>
           <th>Role</th>
           <th>RFID</th>
-          <th>Tanggal Registrasi</th>
+          <th>Tanggal</th>
+          <th>Aksi</th>
         </tr>
-        ${data.map(h=>`
-          <tr>
-            <td>${h.fullName || "-"}</td>
-            <td>${h.username || "-"}</td>
-            <td>${h.role || "-"}</td>
-            <td>${h.rfidSiswa || h.loginRFID || "-"}</td>
-            <td>${h.tanggalRegistrasi || "-"}</td>
-          </tr>
-        `).join("")}
+        ${rows}
       </table>
     </div>
   `;
