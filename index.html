@@ -1258,64 +1258,138 @@ body:not(.auth-loading) #loadingOverlay{display:none!important;}
 .btn-batal-edit-siswa{background:#64748b!important;color:white!important;}
 </style>
 
-
-<style id="pasprapati-v4-rapih-css">
-/* ================= PASPRAPATI V4 RAPIB FIX ================= */
-:root{
-  --primary:#0284c7;
-  --primary-2:#0ea5e9;
-  --dark:#075985;
-  --accent:#f59e0b;
-  --danger:#dc2626;
-  --success:#16a34a;
-  --bg:#f4f8fc;
-  --surface:#ffffff;
-  --line:#e2e8f0;
-  --text:#0f172a;
-  --muted:#64748b;
-  --radius:22px;
-  --shadow:0 14px 36px rgba(15,23,42,.08);
+<style id="pasprapati-loading-logo-only-final">
+/* LOADING FINAL: logo PASPRAPATI saja, tanpa teks */
+body.auth-loading{
+  visibility:visible!important;
+  background:linear-gradient(135deg,#069bd8,#064f6c)!important;
+  overflow:hidden!important;
 }
-html{scroll-behavior:smooth}
-body{font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
-.hidden{display:none!important}
-body.auth-loading{visibility:visible!important;background:linear-gradient(135deg,#0ea5e9,#075985)!important;overflow:hidden}
-body:not(.auth-loading) #loadingOverlay{display:none!important}
-#loadingOverlay{position:fixed;inset:0;z-index:999999;background:linear-gradient(135deg,#0ea5e9,#075985);display:flex;align-items:center;justify-content:center}
-#loadingOverlay .loader,#loadingOverlay b,.loader-box{display:none!important}
-.loading-logo{width:145px;height:145px;object-fit:contain;filter:drop-shadow(0 18px 28px rgba(0,0,0,.28));animation:logoPulse 1.15s ease-in-out infinite}
-@keyframes logoPulse{0%,100%{transform:scale(1);opacity:.92}50%{transform:scale(1.13);opacity:1}}
-
-.login-bg{min-height:100vh;background:radial-gradient(circle at top left,rgba(255,255,255,.35),transparent 30%),linear-gradient(135deg,#0ea5e9,#075985)!important;padding:22px}
-.login-card{width:min(460px,100%);padding:28px;border-radius:28px;box-shadow:0 28px 70px rgba(2,8,23,.25);border:1px solid rgba(255,255,255,.65)}
-.login-logo{width:115px;height:115px;margin-bottom:12px}.login-card h2{font-size:27px;margin-bottom:18px;color:#0f172a}
-
-.app-layout{display:flex;min-height:100vh;background:var(--bg)}
-.sidebar{width:280px;position:sticky;top:0;height:100vh;overflow:auto;background:linear-gradient(180deg,#0ea5e9 0%,#0369a1 100%);padding:20px 14px;box-shadow:10px 0 35px rgba(2,132,199,.14)}
-.sidebar img{max-width:132px!important;max-height:132px!important}.role-card{border-radius:22px;background:rgba(7,89,133,.72);padding:16px;margin-bottom:18px}.role-card h2{font-size:22px}.role-card p{line-height:1.35}
-.nav{gap:7px}.nav button{min-height:48px;border-radius:16px;padding:11px 12px;font-size:14px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);margin:0}.nav-icon{width:32px;height:32px;min-width:32px;border-radius:11px}.nav button:hover,.nav button.active{transform:none;background:#fff;color:#075985}.nav .logout-btn{margin-top:8px;background:#ef4444!important}
-
-.main{flex:1;min-width:0;background:var(--bg)}.topbar{height:72px;padding:0 26px;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}.brand{font-size:20px}.content{padding:26px;max-width:1440px;margin:0 auto}.page-title{font-size:32px;margin:0 0 22px;letter-spacing:-.5px}
-.card{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--radius)!important;box-shadow:var(--shadow)!important;padding:22px!important;margin-bottom:20px!important;transform:none!important}.card:hover{transform:none!important}.card h2{font-size:22px;margin:0 0 14px;color:#0f172a}.card h3{color:#0f172a}
-.grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(320px,.8fr);gap:20px}.hero-card{background:linear-gradient(135deg,#0ea5e9,#075985)!important;color:white!important;display:grid;grid-template-columns:minmax(0,1fr) 150px;align-items:center;gap:18px;min-height:190px}.hero-left h1{font-size:clamp(30px,4vw,44px);line-height:1.05}.hero-left p{max-width:720px}.hero-logo{width:145px!important;height:145px!important}
-.chart-wrap{display:grid!important;grid-template-columns:minmax(0,1.45fr) minmax(280px,.9fr)!important;gap:18px!important}.chart-shell{min-height:235px;padding:16px!important}#barChartPasprapati{width:100%!important;height:220px!important;max-height:220px!important}.donut-area{display:grid!important;grid-template-columns:1fr!important;gap:12px!important}.donut-row{grid-template-columns:88px 1fr!important;padding:14px!important;border-radius:18px!important}.donut-box,.donut-3d{width:88px!important;height:88px!important}.donut-text{font-size:19px!important}
-
-input,select,textarea{border:1px solid #cbd5e1;border-radius:14px;padding:13px 14px;margin:7px 0 13px;background:#fff;font-size:14px}label{display:block;font-weight:700;color:#334155;font-size:13px;margin-top:6px}button{border-radius:13px;padding:11px 16px;margin:3px;background:var(--accent);box-shadow:none!important}.btn-blue{background:#0284c7!important}.btn-red,.btn-hapus-siswa,.btn-reg-delete{background:#dc2626!important}.btn-green{background:#16a34a!important}.btn-gray{background:#64748b!important}
-.table-wrap,#tableSiswa,#tableAbsen,#tableSakit,#tableIzin,#tableAcc,#tableHistoriRegistrasi,#listDataSiswa,#tableAssessment,#tableAgenda,#tableNilai,#listKelolaBerita{width:100%;overflow:auto;border-radius:16px}table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}th{position:sticky;top:0;background:#f1f5f9!important;color:#334155;font-weight:900}th,td{padding:12px 13px;border-bottom:1px solid #e5e7eb;vertical-align:middle}tr:last-child td{border-bottom:0}td img{border-radius:10px;object-fit:cover}
-.rfid-panel{grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr);gap:18px}.tap-card{min-height:300px;border-radius:24px}.tap-info{border-radius:24px}.popup-box{width:min(410px,calc(100vw - 34px))}
-.register-history-box{max-height:260px;border-radius:18px}.profile-grid,.nilai-grid,.assessment-grid,.agenda-grid{gap:14px}.berita-card{border-radius:20px!important}.berita-media-wrap{border-radius:20px 20px 0 0!important}.berita-video{border-radius:0!important;max-height:380px}
-#siswaPage > input,#siswaPage > select,#siswaPage > label{max-width:720px}#siswaPage > button{margin-top:4px}
-@media(max-width:1100px){.grid,.chart-wrap,.rfid-panel{grid-template-columns:1fr!important}.sidebar{width:250px}.content{padding:22px}}
-@media(max-width:860px){.app-layout{display:block}.sidebar{position:relative;width:100%;height:auto}.nav{display:grid;grid-template-columns:1fr 1fr}.topbar{height:auto;display:block;padding:16px 18px}.time-badge{display:inline-block;margin-top:10px}.content{padding:18px}.page-title{font-size:28px}.hero-card{grid-template-columns:1fr;text-align:center}.hero-logo{margin:auto}.profile-grid,.nilai-grid,.assessment-grid,.agenda-grid{grid-template-columns:1fr!important}}
-@media(max-width:560px){.nav{grid-template-columns:1fr}.login-card{padding:22px}.card{padding:18px!important}.hero-left h1{font-size:30px}.donut-row{grid-template-columns:1fr!important;text-align:center}.donut-box{margin:auto}table{min-width:720px}.content{padding:14px}.page-title{font-size:26px}}
-@media print{body{background:white!important}.sidebar,.topbar,.nav,button,#loadingOverlay{display:none!important}.main,.content{padding:0!important;margin:0!important;max-width:none!important}.card{box-shadow:none!important;border:0!important;margin:0!important}.page-title{display:none!important}@page{size:A4 portrait;margin:12mm}}
+body.auth-loading #loginPage,
+body.auth-loading #registerPage,
+body.auth-loading #appPage{
+  display:none!important;
+}
+body:not(.auth-loading) #loadingOverlay{
+  display:none!important;
+}
+#loadingOverlay{
+  position:fixed!important;
+  inset:0!important;
+  background:linear-gradient(135deg,#069bd8,#064f6c)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  z-index:999999!important;
+}
+#loadingOverlay .loading-logo{
+  width:190px!important;
+  height:190px!important;
+  object-fit:contain!important;
+  animation:pasprapatiLogoPulse 1.25s ease-in-out infinite!important;
+  filter:drop-shadow(0 14px 30px rgba(255,255,255,.28))!important;
+}
+#loadingOverlay .loader{
+  width:58px;
+  height:58px;
+  border:5px solid rgba(255,255,255,.25);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+@keyframes pasprapatiLogoPulse{
+  0%{transform:scale(.86);opacity:.72}
+  50%{transform:scale(1.12);opacity:1}
+  100%{transform:scale(.86);opacity:.72}
+}
 </style>
 
+
+<style id="pasprapati-logo-only-no-spinner-final">
+/* FINAL LOADING: logo saja, tanpa spinner dan tanpa teks */
+body.auth-loading{
+  visibility:visible!important;
+  background:linear-gradient(135deg,#069bd8,#064f6c)!important;
+  overflow:hidden!important;
+}
+body.auth-loading #loginPage,
+body.auth-loading #registerPage,
+body.auth-loading #appPage{
+  display:none!important;
+}
+body:not(.auth-loading) #loadingOverlay{
+  display:none!important;
+}
+#loadingOverlay{
+  position:fixed!important;
+  inset:0!important;
+  background:linear-gradient(135deg,#069bd8,#064f6c)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  z-index:999999!important;
+}
+#loadingOverlay .loader,
+#loadingOverlay .loader-box b{
+  display:none!important;
+}
+#loadingOverlay .loading-logo{
+  display:block!important;
+  width:190px!important;
+  height:190px!important;
+  object-fit:contain!important;
+  animation:pasprapatiLogoPulseOnly 1.25s ease-in-out infinite!important;
+  filter:drop-shadow(0 14px 30px rgba(255,255,255,.28))!important;
+}
+@keyframes pasprapatiLogoPulseOnly{
+  0%{transform:scale(.86);opacity:.72}
+  50%{transform:scale(1.12);opacity:1}
+  100%{transform:scale(.86);opacity:.72}
+}
+</style>
+
+<style id="pasprapati-session-loading-fix">
+body.auth-loading{
+  visibility:visible!important;
+  overflow:hidden!important;
+  background:linear-gradient(135deg,#069bd8,#064f6c)!important;
+}
+body.auth-loading #loginPage,
+body.auth-loading #registerPage,
+body.auth-loading #appPage{
+  display:none!important;
+}
+body:not(.auth-loading) #loadingOverlay{display:none!important;}
+#loadingOverlay{
+  position:fixed!important;
+  inset:0!important;
+  background:linear-gradient(135deg,#069bd8,#064f6c)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  z-index:999999!important;
+}
+#loadingOverlay .loader,
+#loadingOverlay .loader-box,
+#loadingOverlay b{display:none!important;}
+#loadingOverlay .loading-logo{
+  display:block!important;
+  width:185px!important;
+  height:185px!important;
+  object-fit:contain!important;
+  animation:pasprapatiLogoPulse 1.25s ease-in-out infinite!important;
+  filter:drop-shadow(0 15px 32px rgba(255,255,255,.28))!important;
+}
+@keyframes pasprapatiLogoPulse{
+  0%,100%{transform:scale(.86);opacity:.72;}
+  50%{transform:scale(1.12);opacity:1;}
+}
+</style>
 </head>
 
 <body class="auth-loading">
 <div id="loadingOverlay">
-  <img src="pasprapatii.png" class="loading-logo" alt="PASPRAPATI" onerror="this.style.display='none'">
+  <img src="pasprapatii.png" class="loading-logo">
 </div>
 
 
@@ -1362,10 +1436,10 @@ input,select,textarea{border:1px solid #cbd5e1;border-radius:14px;padding:13px 1
     </select>
     <input type="text" id="regLoginRFID" placeholder="UID RFID siswa untuk absen">
     <div id="regFotoSiswaWrap">
-      <label>Upload Foto Siswa</label>
+      <label id="regFotoLabel">Upload Foto Siswa / BPH</label>
       <input type="file" id="regFotoSiswa" accept="image/*">
     </div>
-    <p style="margin:-6px 0 12px;color:#64748b;font-size:12px;line-height:1.45;">Catatan: RFID wajib untuk siswa. Guru/BPH boleh kosong dan tetap bisa login manual pakai username & password. Foto hanya muncul untuk role siswa dan otomatis masuk ke Data Siswa.</p>
+    <p style="margin:-6px 0 12px;color:#64748b;font-size:12px;line-height:1.45;">Catatan: RFID dan foto wajib untuk Siswa/BPH agar otomatis masuk ke Data Siswa. Guru boleh kosong dan tetap bisa login manual pakai username & password.</p>
     <button onclick="registerUser()">Daftar</button>
     <button class="btn-red" onclick="showLogin()">Kembali</button>
 
@@ -1443,7 +1517,7 @@ input,select,textarea{border:1px solid #cbd5e1;border-radius:14px;padding:13px 1
             <h1>Selamat Datang, <span id="welcomeName">User</span></h1>
             <p>Sistem Absensi, Perizinan, dan Administrasi Anggota Pramuka Berbasis RFID.</p>
           </div>
-          <img src="pasprapatii.png" class="hero-logo" onerror="this.style.display='none'">
+          <img src="/Users/user/Documents/Pasprapati/Pramuka.png" class="hero-logo" onerror="this.style.display='none'">
         </div>
 
         <div class="card chart-card">
@@ -1832,6 +1906,29 @@ input,select,textarea{border:1px solid #cbd5e1;border-radius:14px;padding:13px 1
         <div id="tableNilai"></div>
       </div>
 
+      <div id="beritaPage" class="card hidden">
+        <h2>Berita Pramuka PASPRAPATI</h2>
+        <p style="color:#64748b;margin-top:-8px;">Guru dan BPH bisa upload berita. Siswa hanya bisa membaca berita.</p>
+
+        <div id="formBerita" class="form-berita">
+          <input type="text" id="judulBerita" placeholder="Judul berita">
+
+          <label>Upload Foto Berita</label>
+          <input type="file" id="fotoBerita" accept="image/*">
+
+          <label>Upload Video Berita</label>
+          <input type="file" id="videoBerita" accept="video/mp4,video/webm,video/quicktime">
+          <p class="video-upload-note">Video disarankan MP4/WebM resolusi 720p atau 1080p agar ringan diputar. Maksimal 50 MB.</p>
+
+          <textarea id="artikelBerita" placeholder="Tulis artikel berita..."></textarea>
+
+          <button class="btn-blue" onclick="uploadBerita()">Upload Berita</button>
+        </div>
+
+        <h3>Daftar Berita</h3>
+        <div id="listBerita"></div>
+      </div>
+
       <div id="editAkunPage" class="card hidden">
         <h2>Edit Akun</h2>
         <div class="profile-info">
@@ -1898,8 +1995,7 @@ input,select,textarea{border:1px solid #cbd5e1;border-radius:14px;padding:13px 1
   </main>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js">
 /* ================= FIX HAPUS REGISTRASI ================= */
 function getRegNamaFix(h){
   return h.fullName || h.nama || h.name || "-";
@@ -5282,12 +5378,22 @@ function updateClock(){
 
 function autoLoginSetelahRefresh(){
   try{
-    const saved = JSON.parse(localStorage.getItem("pasprapati_login_aktif") || "null");
-    if(!saved || !saved.username) return false;
+    const savedLogin = JSON.parse(localStorage.getItem("pasprapati_login_aktif") || "null");
+    const savedUser = JSON.parse(localStorage.getItem("pasprapati_current_user") || "null");
+    const username = (savedLogin && savedLogin.username) ? savedLogin.username : (savedUser && savedUser.username ? savedUser.username : "");
+    if(!username) return false;
 
-    const found = users.find(u => String(u.username || "") === String(saved.username || ""));
+    let found = users.find(u => String(u.username || "") === String(username || ""));
+    if(!found && savedUser && savedUser.username){
+      found = savedUser;
+      if(!users.some(u => String(u.username || "") === String(found.username || ""))){
+        users.push(found);
+        try{ localStorage.setItem("pasprapati_users", JSON.stringify(users)); }catch(e){}
+      }
+    }
     if(!found){
       localStorage.removeItem("pasprapati_login_aktif");
+      localStorage.removeItem("pasprapati_current_user");
       return false;
     }
 
@@ -5297,6 +5403,7 @@ function autoLoginSetelahRefresh(){
   }catch(err){
     console.error("Auto login gagal:", err);
     localStorage.removeItem("pasprapati_login_aktif");
+    localStorage.removeItem("pasprapati_current_user");
     return false;
   }
 }
@@ -5700,6 +5807,822 @@ window.addEventListener("load", async()=>{
   document.addEventListener('DOMContentLoaded', function(){
     try{ updateRegisterRFIDPlaceholder(); }catch(e){}
   });
+})();
+</script>
+
+
+
+<style id="pasprapati-bph-foto-loading-final-css">
+/* Loading logo besar-kecil */
+#loadingOverlay{
+  background:linear-gradient(135deg,#069bd8,#064f6c)!important;
+}
+#loadingOverlay .loader-box{
+  text-align:center;
+  color:white;
+  font-family:Arial,sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:14px;
+}
+.loading-logo{
+  width:185px;
+  height:185px;
+  object-fit:contain;
+  animation:pulseLogoPasprapati 1.25s ease-in-out infinite;
+  filter:drop-shadow(0 18px 38px rgba(255,255,255,.30));
+}
+@keyframes pulseLogoPasprapati{
+  0%,100%{transform:scale(.88);opacity:.78;}
+  50%{transform:scale(1.12);opacity:1;}
+}
+#regFotoSiswaWrap{
+  display:block;
+}
+</style>
+
+<script id="pasprapati-bph-foto-final-patch">
+(function(){
+  function txt(id){
+    const el=document.getElementById(id);
+    return el ? String(el.value || '').trim() : '';
+  }
+  function byId(id){ return document.getElementById(id); }
+  function roleIsMember(role){ return role === 'siswa' || role === 'bph'; }
+  function fileBase64(id){
+    return new Promise(function(resolve){
+      const input=byId(id);
+      const file=input && input.files && input.files[0];
+      if(!file){ resolve(''); return; }
+      const reader=new FileReader();
+      reader.onload=function(){ resolve(reader.result || ''); };
+      reader.onerror=function(){ resolve(''); };
+      reader.readAsDataURL(file);
+    });
+  }
+  function ensureArrays(){
+    window.users = Array.isArray(window.users) ? window.users : [];
+    window.siswa = Array.isArray(window.siswa) ? window.siswa : [];
+    window.historiRegistrasi = Array.isArray(window.historiRegistrasi) ? window.historiRegistrasi : [];
+  }
+  function saveAllPatch(){
+    ensureArrays();
+    try{ localStorage.setItem('pasprapati_users', JSON.stringify(window.users)); }catch(e){}
+    try{ localStorage.setItem('pasprapati_siswa', JSON.stringify(window.siswa)); }catch(e){}
+    try{ localStorage.setItem('pasprapati_histori_registrasi', JSON.stringify(window.historiRegistrasi)); }catch(e){}
+    try{ if(typeof saveUsers === 'function') saveUsers(); }catch(e){}
+    try{ if(typeof saveAll === 'function') saveAll(); }catch(e){}
+    try{ if(typeof saveCloudData === 'function') saveCloudData(); }catch(e){}
+  }
+  function refreshAllPatch(){
+    ['renderRegisterHistoryPreview','renderHistoriRegistrasi','renderListSiswa','renderData','updateDashboard','renderChartDashboard','renderNilaiTable'].forEach(function(fn){
+      try{ if(typeof window[fn] === 'function') window[fn](); }catch(e){}
+    });
+  }
+
+  window.updateRegisterRFIDPlaceholder = function(){
+    const role = byId('regRole')?.value || 'siswa';
+    const input = byId('regLoginRFID');
+    const fotoWrap = byId('regFotoSiswaWrap');
+    const fotoLabel = byId('regFotoLabel');
+    if(input){
+      if(role === 'siswa') input.placeholder = 'UID RFID siswa untuk absen';
+      else if(role === 'bph') input.placeholder = 'UID RFID BPH untuk absen/login';
+      else input.placeholder = 'UID RFID login Guru (opsional, bisa login manual)';
+    }
+    if(fotoWrap){
+      fotoWrap.style.display = roleIsMember(role) ? 'block' : 'none';
+      if(!roleIsMember(role)){
+        const fotoInput = byId('regFotoSiswa');
+        if(fotoInput) fotoInput.value = '';
+      }
+    }
+    if(fotoLabel){
+      fotoLabel.textContent = role === 'bph' ? 'Upload Foto BPH' : 'Upload Foto Siswa';
+    }
+  };
+
+  window.registerUser = async function(){
+    try{ if(typeof ensureCloudLoaded === 'function') await ensureCloudLoaded(); }catch(e){}
+    ensureArrays();
+
+    const username = txt('regUser');
+    const fullName = txt('regFullName');
+    const password = txt('regPass');
+    const role = byId('regRole')?.value || 'siswa';
+    const inputRFID = txt('regLoginRFID');
+    const fotoReg = roleIsMember(role) ? await fileBase64('regFotoSiswa') : '';
+
+    if(!username || !fullName || !password){
+      alert('Username, nama lengkap, dan password wajib diisi');
+      return;
+    }
+    if(roleIsMember(role) && !inputRFID){
+      alert('UID RFID wajib diisi untuk Siswa/BPH');
+      return;
+    }
+    if(roleIsMember(role) && !fotoReg){
+      alert('Foto wajib diupload untuk Siswa/BPH');
+      return;
+    }
+    if(window.users.some(function(u){ return String(u.username || '').trim() === username; })){
+      alert('Username sudah terdaftar');
+      return;
+    }
+    if(inputRFID){
+      const rfidDipakaiUser = window.users.some(function(u){
+        return String(u.loginRFID || '').trim() === inputRFID || String(u.rfidSiswa || '').trim() === inputRFID;
+      });
+      const rfidDipakaiSiswa = window.siswa.some(function(s){
+        return String(s.rfid || s.loginRFID || s.rfidSiswa || '').trim() === inputRFID;
+      });
+      if(rfidDipakaiUser || rfidDipakaiSiswa){
+        alert('RFID sudah terdaftar');
+        return;
+      }
+    }
+
+    const tanggalRegistrasi = new Date().toLocaleString('id-ID');
+    const idBaru = Date.now();
+    const jabatanDefault = role === 'bph' ? 'BPH' : (role === 'siswa' ? 'Anggota' : 'Guru');
+
+    window.users.push({
+      id:idBaru,
+      username:username,
+      fullName:fullName,
+      password:password,
+      role:role,
+      loginRFID: (role === 'guru' || role === 'bph') ? inputRFID : '',
+      rfidSiswa: roleIsMember(role) ? inputRFID : '',
+      foto:fotoReg,
+      tanggalRegistrasi:tanggalRegistrasi
+    });
+
+    if(roleIsMember(role)){
+      const dataSiswa={
+        id:idBaru,
+        username:username,
+        role:role,
+        nama:fullName,
+        fullName:fullName,
+        jabatan:jabatanDefault,
+        tingkatan:'-',
+        rfid:inputRFID,
+        rfidSiswa:inputRFID,
+        foto:fotoReg,
+        ramu:'',
+        rakit:'',
+        terap:'',
+        kegiatan:'',
+        garuda:'',
+        tanggalInput:tanggalRegistrasi,
+        sumber:'Registrasi Akun'
+      };
+      const idx=window.siswa.findIndex(function(s){
+        return String(s.username || '').trim() === username || String(s.rfid || s.rfidSiswa || '').trim() === inputRFID;
+      });
+      if(idx >= 0) window.siswa[idx] = Object.assign({}, window.siswa[idx], dataSiswa);
+      else window.siswa.push(dataSiswa);
+    }
+
+    window.historiRegistrasi.push({
+      id:idBaru,
+      username:username,
+      fullName:fullName,
+      role:role,
+      loginRFID:(role === 'guru' || role === 'bph') ? inputRFID : '',
+      rfidSiswa:roleIsMember(role) ? inputRFID : '',
+      foto:fotoReg,
+      tanggalRegistrasi:tanggalRegistrasi
+    });
+
+    saveAllPatch();
+    refreshAllPatch();
+
+    ['regUser','regFullName','regPass','regLoginRFID','regFotoSiswa'].forEach(function(id){
+      const el=byId(id);
+      if(el) el.value='';
+    });
+    updateRegisterRFIDPlaceholder();
+    alert(roleIsMember(role) ? 'Registrasi ' + role.toUpperCase() + ' berhasil dan otomatis masuk ke Data Siswa' : 'Registrasi berhasil sebagai Guru');
+  };
+
+  window.addEventListener('load', function(){
+    try{ updateRegisterRFIDPlaceholder(); }catch(e){}
+    /* Jangan hapus auth-loading di sini.
+       Loading ditutup oleh proses utama setelah cek session/auto-login selesai,
+       supaya refresh tidak mental balik ke halaman login. */
+  });
+})();
+</script>
+
+
+
+<style id="pasprapati-manual-absen-dashboard-css">
+/* LOADING LOGO SAJA - TANPA TEKS/SPINNER */
+#loadingOverlay .loader,
+#loadingOverlay .loader-box b{display:none!important;}
+#loadingOverlay .loader-box{display:flex!important;align-items:center!important;justify-content:center!important;}
+#loadingOverlay .loading-logo{
+  display:block!important;
+  width:190px!important;
+  height:190px!important;
+  object-fit:contain!important;
+  animation:pasprapatiLogoPulse 1.25s ease-in-out infinite!important;
+  filter:drop-shadow(0 16px 32px rgba(255,255,255,.28));
+}
+@keyframes pasprapatiLogoPulse{
+  0%,100%{transform:scale(.86);opacity:.72;}
+  50%{transform:scale(1.12);opacity:1;}
+}
+.manual-absen-card{
+  margin-top:22px;
+  background:linear-gradient(180deg,#ffffff,#f8fafc);
+  border:1px solid #e2e8f0;
+  border-radius:24px;
+  padding:22px;
+  box-shadow:0 10px 28px rgba(15,23,42,.06);
+}
+.manual-absen-card h3{margin:0 0 6px;color:#0f172a;font-size:22px;}
+.manual-absen-card p{margin:0 0 14px;color:#64748b;font-size:13px;line-height:1.45;}
+.manual-absen-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.manual-absen-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+.monthly-attendance-card{
+  margin:16px 0 18px;
+  padding:18px;
+  border-radius:22px;
+  background:linear-gradient(135deg,#ffffff,#eff6ff);
+  border:1px solid #bae6fd;
+}
+.monthly-attendance-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px;}
+.monthly-attendance-head b{font-size:16px;color:#0f172a;}
+.monthly-attendance-head span{font-size:12px;color:#64748b;}
+.monthly-attendance-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.monthly-attendance-item{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:14px;text-align:center;box-shadow:0 8px 18px rgba(15,23,42,.05);}
+.monthly-attendance-item .num{font-size:28px;font-weight:900;color:#075985;margin-bottom:4px;}
+.monthly-attendance-item .label{font-size:12px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.4px;}
+@media(max-width:700px){.manual-absen-grid,.monthly-attendance-grid{grid-template-columns:1fr 1fr}.monthly-attendance-head{flex-direction:column;align-items:flex-start}}
+</style>
+
+<script id="pasprapati-manual-absen-dashboard-js">
+/* ================= ABSEN MANUAL + DASHBOARD BULANAN ================= */
+(function(){
+  function byId(id){return document.getElementById(id);}
+  function pad(n){return String(n).padStart(2,'0');}
+  function todayISO(){const d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+  function nowTime(){return new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});}
+  function bulanKey(date){return date.getFullYear()+"-"+pad(date.getMonth()+1);}
+  function bulanLabel(date){return date.toLocaleDateString('id-ID',{month:'long',year:'numeric'});}
+  function esc(v){return String(v ?? '-').replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c];});}
+  function parseDateFromAbsen(a){
+    if(a && a.tanggalISO){const d=new Date(a.tanggalISO+'T00:00:00'); if(!isNaN(d)) return d;}
+    const t=String((a && a.tanggal) || '').trim();
+    const m=t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if(m){return new Date(Number(m[3]), Number(m[2])-1, Number(m[1]));}
+    const d=new Date(t);
+    if(!isNaN(d)) return d;
+    return null;
+  }
+  function getStatusAbsen(a){
+    const s=String((a && a.status) || '').toLowerCase();
+    if(s.includes('alpha')) return 'Alpha';
+    if(s.includes('izin')) return 'Izin';
+    if(s.includes('sakit')) return 'Sakit';
+    if(s.includes('hadir') || s.includes('masuk') || s.includes('pulang') || (a && (a.masuk || a.jam))) return 'Hadir';
+    return 'Hadir';
+  }
+  function isMemberUser(){return currentUser && (currentUser.role === 'siswa' || currentUser.role === 'bph');}
+  function sameStudent(a){
+    if(!isMemberUser()) return true;
+    const nama=currentUser.fullName || currentUser.username || '';
+    const rfid=currentUser.rfidSiswa || currentUser.loginRFID || '';
+    return (rfid && String(a.rfid || '').trim() === String(rfid).trim()) || String(a.nama || '').trim() === String(nama).trim();
+  }
+  function getMonthlyCounts(){
+    const now=new Date();
+    const key=bulanKey(now);
+    const out={Hadir:0,Alpha:0,Izin:0,Sakit:0};
+    if(!Array.isArray(absensi)) absensi=[];
+    absensi.forEach(function(a){
+      const d=parseDateFromAbsen(a);
+      if(!d || bulanKey(d)!==key || !sameStudent(a)) return;
+      const st=getStatusAbsen(a);
+      if(out[st] !== undefined) out[st]++;
+    });
+    return out;
+  }
+  function ensureManualAbsenUI(){
+    const absenPage=byId('absenPage');
+    if(!absenPage || byId('manualAbsenCard')) return;
+    absenPage.insertAdjacentHTML('beforeend', `
+      <div class="manual-absen-card" id="manualAbsenCard">
+        <h3>Absen Manual</h3>
+        <p>Dipakai guru untuk input absen tanpa tap RFID. Pilih siswa, status, tanggal, dan jam absen.</p>
+        <div class="manual-absen-grid">
+          <div>
+            <label>Nama Siswa / BPH</label>
+            <select id="manualAbsenSiswa"></select>
+          </div>
+          <div>
+            <label>Status Absen</label>
+            <select id="manualAbsenStatus">
+              <option value="Hadir">Hadir</option>
+              <option value="Alpha">Alpha</option>
+              <option value="Izin">Izin</option>
+              <option value="Sakit">Sakit</option>
+            </select>
+          </div>
+          <div>
+            <label>Tanggal</label>
+            <input type="date" id="manualAbsenTanggal">
+          </div>
+          <div>
+            <label>Jam</label>
+            <input type="time" id="manualAbsenJam">
+          </div>
+        </div>
+        <div class="manual-absen-actions">
+          <button class="btn-blue" type="button" onclick="simpanAbsenManual()">Simpan Absen Manual</button>
+          <button class="btn-gray" type="button" onclick="resetAbsenManual()">Reset</button>
+        </div>
+      </div>
+    `);
+  }
+  function renderManualAbsenSelect(){
+    const select=byId('manualAbsenSiswa');
+    if(!select) return;
+    const list=(Array.isArray(siswa)?siswa:[]).filter(function(s){return (s.nama || s.fullName) && (s.rfid || s.rfidSiswa || s.loginRFID);});
+    if(!list.length){
+      select.innerHTML='<option value="">Belum ada Data Siswa/BPH</option>';
+      return;
+    }
+    select.innerHTML=list.map(function(s,idx){
+      const role=s.role ? ' - '+String(s.role).toUpperCase() : '';
+      return `<option value="${idx}">${esc(s.nama || s.fullName)}${role} | RFID: ${esc(s.rfid || s.rfidSiswa || s.loginRFID)}</option>`;
+    }).join('');
+  }
+  window.resetAbsenManual=function(){
+    if(byId('manualAbsenTanggal')) byId('manualAbsenTanggal').value=todayISO();
+    if(byId('manualAbsenJam')) byId('manualAbsenJam').value=nowTime();
+    if(byId('manualAbsenStatus')) byId('manualAbsenStatus').value='Hadir';
+  };
+  window.simpanAbsenManual=function(){
+    if(!currentUser || currentUser.role !== 'guru'){
+      showError('Absen manual hanya bisa diinput oleh guru');
+      return;
+    }
+    const select=byId('manualAbsenSiswa');
+    const idx=Number(select ? select.value : -1);
+    const data=(Array.isArray(siswa)?siswa:[])[idx];
+    const status=byId('manualAbsenStatus') ? byId('manualAbsenStatus').value : 'Hadir';
+    const tglISO=byId('manualAbsenTanggal') ? byId('manualAbsenTanggal').value : todayISO();
+    const jam=byId('manualAbsenJam') ? byId('manualAbsenJam').value : nowTime();
+    if(!data){showError('Pilih siswa/BPH terlebih dahulu');return;}
+    if(!tglISO){showError('Tanggal wajib diisi');return;}
+    if(!jam){showError('Jam wajib diisi');return;}
+    const d=new Date(tglISO+'T00:00:00');
+    const tanggalId=isNaN(d) ? tglISO : d.toLocaleDateString('id-ID');
+    const rfid=String(data.rfid || data.rfidSiswa || data.loginRFID || '').trim();
+    const nama=data.nama || data.fullName || '-';
+    if(!rfid){showError('Data ini belum punya RFID');return;}
+
+    const oldIndex=absensi.findIndex(function(a){
+      return String(a.rfid || '').trim() === rfid && (String(a.tanggalISO || '') === tglISO || String(a.tanggal || '') === tanggalId) && a.mode === 'Manual';
+    });
+    const row={
+      id: oldIndex>=0 ? absensi[oldIndex].id : Date.now(),
+      nama:nama,
+      rfid:rfid,
+      tanggal:tanggalId,
+      tanggalISO:tglISO,
+      jam:jam,
+      masuk: status === 'Hadir' ? jam : '',
+      pulang:'',
+      status:status,
+      mode:'Manual',
+      inputOleh: currentUser.fullName || currentUser.username || 'Guru',
+      waktuInput:new Date().toLocaleString('id-ID')
+    };
+    if(oldIndex>=0) absensi[oldIndex]=Object.assign({}, absensi[oldIndex], row);
+    else absensi.push(row);
+    saveAll();
+    updateDashboard();
+    renderChartDashboard();
+    renderDashboardMonthlyAttendance();
+    if(typeof renderData === 'function') renderData();
+    showSuccess('Absen manual berhasil disimpan: '+nama+' - '+status+' jam '+jam);
+  };
+  function ensureDashboardMonthlyUI(){
+    const percentCard=byId('persenAbsenDashboard') ? byId('persenAbsenDashboard').closest('.absen-percent-card') : null;
+    if(!percentCard || byId('monthlyAttendanceCard')) return;
+    percentCard.insertAdjacentHTML('afterend', `
+      <div class="monthly-attendance-card" id="monthlyAttendanceCard">
+        <div class="monthly-attendance-head">
+          <div><b>Rekap Absen Bulan Ini</b><br><span id="monthlyAttendanceSubtitle">-</span></div>
+          <span id="monthlyAttendanceUser">-</span>
+        </div>
+        <div class="monthly-attendance-grid">
+          <div class="monthly-attendance-item"><div class="num" id="monthlyHadir">0</div><div class="label">Hadir</div></div>
+          <div class="monthly-attendance-item"><div class="num" id="monthlyAlpha">0</div><div class="label">Alpha</div></div>
+          <div class="monthly-attendance-item"><div class="num" id="monthlyIzin">0</div><div class="label">Izin</div></div>
+          <div class="monthly-attendance-item"><div class="num" id="monthlySakit">0</div><div class="label">Sakit</div></div>
+        </div>
+      </div>
+    `);
+  }
+  window.renderDashboardMonthlyAttendance=function(){
+    ensureDashboardMonthlyUI();
+    const c=getMonthlyCounts();
+    const now=new Date();
+    const set=function(id,val){const el=byId(id); if(el) el.innerText=val;};
+    set('monthlyHadir',c.Hadir); set('monthlyAlpha',c.Alpha); set('monthlyIzin',c.Izin); set('monthlySakit',c.Sakit);
+    const sub=byId('monthlyAttendanceSubtitle'); if(sub) sub.innerText=bulanLabel(now);
+    const user=byId('monthlyAttendanceUser');
+    if(user) user.innerText=isMemberUser() ? (currentUser.fullName || currentUser.username || 'Siswa') : 'Semua siswa/BPH';
+  };
+
+  const oldShowPage=window.showPage;
+  window.showPage=function(id,btn){
+    if(typeof oldShowPage === 'function') oldShowPage(id,btn);
+    if(id === 'absenPage'){
+      ensureManualAbsenUI();
+      renderManualAbsenSelect();
+      resetAbsenManual();
+    }
+    if(id === 'dashboardPage'){
+      ensureDashboardMonthlyUI();
+      renderDashboardMonthlyAttendance();
+      renderChartDashboard();
+    }
+  };
+
+  const oldUpdateDashboard=window.updateDashboard;
+  window.updateDashboard=function(){
+    if(typeof oldUpdateDashboard === 'function') oldUpdateDashboard();
+    renderDashboardMonthlyAttendance();
+  };
+
+  window.renderChartDashboard=function(){
+    const ctxBar=byId('barChartPasprapati');
+    if(!ctxBar || typeof Chart === 'undefined') return;
+    if(barChartPasprapati) barChartPasprapati.destroy();
+    const c=getMonthlyCounts();
+    barChartPasprapati=new Chart(ctxBar,{type:'bar',data:{
+      labels:['Hadir','Alpha','Izin','Sakit'],
+      datasets:[{label:'Jumlah bulan ini',data:[c.Hadir,c.Alpha,c.Izin,c.Sakit],backgroundColor:['#22c55e','#ef4444','#f59e0b','#0ea5e9'],borderRadius:12,barThickness:34}]
+    },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#0f172a',padding:12,cornerRadius:12,callbacks:{label:function(context){return 'Jumlah: '+context.raw;}}}},scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:11},color:'#64748b'},grid:{color:'#e5e7eb'}},x:{ticks:{font:{size:12,weight:'bold'},color:'#334155'},grid:{display:false}}}}});
+
+    const hadirPercent=(typeof getPersentaseAbsenHariIni === 'function') ? getPersentaseAbsenHariIni() : 0;
+    const totalPengajuan=(Array.isArray(sakit)?sakit.length:0)+(Array.isArray(izin)?izin.length:0);
+    const totalDisetujui=[...(Array.isArray(sakit)?sakit:[]),...(Array.isArray(izin)?izin:[])].filter(function(x){return x.status === 'Disetujui';}).length;
+    const izinPercent=totalPengajuan ? Math.round((totalDisetujui/totalPengajuan)*100) : 0;
+    if(byId('donutHadirText')) byId('donutHadirText').innerText=hadirPercent+'%';
+    if(byId('donutIzinText')) byId('donutIzinText').innerText=izinPercent+'%';
+    if(byId('donutHadir3D')) byId('donutHadir3D').style.setProperty('--value',hadirPercent);
+    if(byId('donutIzin3D')) byId('donutIzin3D').style.setProperty('--value',izinPercent);
+  };
+
+  const oldRenderData=window.renderData;
+  window.renderData=function(){
+    if(typeof oldRenderData === 'function') oldRenderData();
+    const table=byId('tableAbsen');
+    if(table){
+      table.innerHTML=`
+        <table>
+          <tr><th>Nama</th><th>RFID</th><th>Tanggal</th><th>Jam</th><th>Masuk</th><th>Pulang</th><th>Status</th><th>Input</th></tr>
+          ${(Array.isArray(absensi)?absensi:[]).map(function(a){return `
+            <tr>
+              <td>${esc(a.nama)}</td>
+              <td>${esc(a.rfid)}</td>
+              <td>${esc(a.tanggal || a.tanggalISO)}</td>
+              <td>${esc(a.jam || a.masuk || '-')}</td>
+              <td>${esc(a.masuk || '-')}</td>
+              <td>${esc(a.pulang || '-')}</td>
+              <td>${esc(a.status || '-')}</td>
+              <td>${esc(a.mode || 'RFID')}</td>
+            </tr>`;}).join('')}
+        </table>`;
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded',function(){
+    ensureManualAbsenUI();
+    renderManualAbsenSelect();
+    resetAbsenManual();
+    ensureDashboardMonthlyUI();
+    renderDashboardMonthlyAttendance();
+  });
+  window.addEventListener('load',function(){
+    setTimeout(function(){
+      ensureManualAbsenUI(); renderManualAbsenSelect(); resetAbsenManual();
+      ensureDashboardMonthlyUI(); renderDashboardMonthlyAttendance(); renderChartDashboard();
+    },450);
+  });
+})();
+</script>
+
+
+<style id="pasprapati-laporan-absen-css">
+.laporan-absen-card{
+  background:linear-gradient(180deg,#ffffff,#f8fafc);
+  border:1px solid #e2e8f0;
+  border-radius:24px;
+  padding:22px;
+  box-shadow:0 10px 28px rgba(15,23,42,.06);
+}
+.laporan-filter{
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:12px;
+  align-items:end;
+  margin-bottom:18px;
+  padding:16px;
+  border:1px solid #e2e8f0;
+  border-radius:20px;
+  background:#f8fafc;
+}
+.laporan-preview{
+  background:white;
+  border:1px solid #e5e7eb;
+  border-radius:18px;
+  padding:22px;
+  overflow:auto;
+}
+.laporan-print-paper{
+  background:white;
+  color:#111827;
+  max-width:900px;
+  margin:auto;
+  font-family:Arial,sans-serif;
+}
+.laporan-header{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  border-bottom:3px solid #0ea5e9;
+  padding-bottom:14px;
+  margin-bottom:16px;
+  text-align:center;
+}
+.laporan-logo{
+  width:82px;
+  height:82px;
+  object-fit:contain;
+}
+.laporan-title h1{
+  margin:0;
+  font-size:24px;
+  letter-spacing:.4px;
+  text-transform:uppercase;
+}
+.laporan-title p{
+  margin:6px 0 0;
+  color:#475569;
+  font-size:14px;
+}
+.laporan-meta{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  margin:12px 0 16px;
+  font-size:14px;
+  color:#334155;
+}
+.laporan-table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:8px;
+}
+.laporan-table th,
+.laporan-table td{
+  border:1px solid #111827;
+  padding:9px 10px;
+  font-size:13px;
+  color:#111827;
+}
+.laporan-table th{
+  background:#e0f2fe;
+  text-align:center;
+  font-weight:800;
+}
+.laporan-table td:first-child,
+.laporan-table td:last-child{
+  text-align:center;
+}
+.status-report{
+  display:inline-block;
+  padding:5px 10px;
+  border-radius:999px;
+  font-weight:800;
+  font-size:12px;
+  color:white;
+}
+.status-report.hadir{background:#16a34a;}
+.status-report.izin{background:#f59e0b;}
+.status-report.alpha{background:#dc2626;}
+.status-report.sakit{background:#0ea5e9;}
+.status-report.kosong{background:#64748b;}
+.laporan-footer{
+  margin-top:34px;
+  display:flex;
+  justify-content:flex-end;
+  font-size:14px;
+}
+.laporan-ttd{
+  width:230px;
+  text-align:center;
+}
+.laporan-ttd-space{
+  height:62px;
+}
+@media(max-width:800px){.laporan-filter{grid-template-columns:1fr}.laporan-header{flex-direction:column}.laporan-meta{flex-direction:column}}
+@media print{
+  body *{visibility:hidden!important;}
+  #laporanPrintArea,#laporanPrintArea *{visibility:visible!important;}
+  #laporanPrintArea{position:absolute!important;left:0!important;top:0!important;width:100%!important;padding:0!important;border:0!important;}
+  .laporan-print-paper{max-width:none!important;margin:0!important;padding:12mm!important;}
+  .laporan-preview{border:0!important;padding:0!important;}
+  .status-report{color:#111827!important;border:1px solid #111827!important;background:white!important;}
+}
+</style>
+
+<script id="pasprapati-laporan-absen-js">
+/* ================= LAPORAN ABSENSI HARIAN GURU ================= */
+(function(){
+  function byId(id){return document.getElementById(id);}
+  function pad(n){return String(n).padStart(2,'0');}
+  function todayISO(){const d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+  function nowFull(){return new Date().toLocaleString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});}
+  function tanggalPanjang(iso){const d=new Date((iso||todayISO())+'T00:00:00');return isNaN(d)?iso:d.toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'});}
+  function esc(v){return String(v ?? '-').replace(/[&<>'"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c];});}
+  function normalizeStatus(v){
+    const s=String(v||'').toLowerCase();
+    if(s.includes('sakit')) return 'Sakit';
+    if(s.includes('izin')) return 'Izin';
+    if(s.includes('alpha')) return 'Alpha';
+    if(s.includes('hadir') || s.includes('masuk') || s.includes('pulang')) return 'Hadir';
+    return '';
+  }
+  function getRfid(s){return String(s.rfid || s.rfidSiswa || s.loginRFID || '').trim();}
+  function getNama(s){return s.nama || s.fullName || s.name || '-';}
+  function getJabatan(s){return s.jabatan || s.role || s.tingkatan || '-';}
+  function getDateISOFromAbsen(a){
+    if(a && a.tanggalISO) return String(a.tanggalISO);
+    const raw=String((a && a.tanggal) || '').trim();
+    const m=raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if(m) return m[3]+'-'+pad(m[2])+'-'+pad(m[1]);
+    const d=new Date(raw);
+    if(!isNaN(d)) return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+    return '';
+  }
+  function getStatusForStudent(stu, iso){
+    const rfid=getRfid(stu);
+    const nama=getNama(stu).trim().toLowerCase();
+    const rows=(Array.isArray(absensi)?absensi:[]).filter(function(a){
+      const sameDate=getDateISOFromAbsen(a)===iso;
+      const sameRfid=rfid && String(a.rfid||'').trim()===rfid;
+      const sameName=String(a.nama||'').trim().toLowerCase()===nama;
+      return sameDate && (sameRfid || sameName);
+    });
+    if(!rows.length) return {status:'Alpha',jam:'-'};
+    const priority={Sakit:4,Izin:3,Alpha:2,Hadir:1};
+    rows.sort(function(a,b){return (priority[normalizeStatus(b.status)||'Hadir']||0)-(priority[normalizeStatus(a.status)||'Hadir']||0);});
+    const picked=rows[0];
+    return {status:normalizeStatus(picked.status)||'Hadir',jam:picked.jam || picked.masuk || picked.pulang || '-'};
+  }
+  function getReportRows(){
+    const iso=(byId('laporanAbsenTanggal') && byId('laporanAbsenTanggal').value) || todayISO();
+    const data=(Array.isArray(siswa)?siswa:[]).filter(function(s){return getNama(s) !== '-';});
+    return data.map(function(s,idx){const st=getStatusForStudent(s,iso);return {no:idx+1,nama:getNama(s),jabatan:getJabatan(s),status:st.status,jam:st.jam};});
+  }
+  function makeReportHTML(){
+    const iso=(byId('laporanAbsenTanggal') && byId('laporanAbsenTanggal').value) || todayISO();
+    const rows=getReportRows();
+    const guru=(currentUser && (currentUser.fullName || currentUser.username)) || 'Guru';
+    const bodyRows=rows.length ? rows.map(function(r){
+      const cls=String(r.status||'').toLowerCase();
+      const label=r.jam && r.jam !== '-' ? r.status+' ('+r.jam+')' : r.status;
+      return `<tr><td>${r.no}</td><td>${esc(r.nama)}</td><td>${esc(r.jabatan)}</td><td><span class="status-report ${esc(cls)}">${esc(label)}</span></td></tr>`;
+    }).join('') : `<tr><td colspan="4" style="text-align:center;padding:18px;">Belum ada data siswa.</td></tr>`;
+    return `
+      <div class="laporan-print-paper">
+        <div class="laporan-header">
+          <img src="pasprapatii.png" class="laporan-logo" onerror="this.style.display='none'">
+          <div class="laporan-title">
+            <h1>Laporan Absensi Pramuka Inti</h1>
+            <p>PASPRAPATI - Pramuka System</p>
+          </div>
+        </div>
+        <div class="laporan-meta">
+          <div><b>Tanggal Absen:</b> ${esc(tanggalPanjang(iso))}</div>
+          <div><b>Dicetak:</b> ${esc(nowFull())}</div>
+        </div>
+        <table class="laporan-table">
+          <thead><tr><th style="width:60px;">Nomor</th><th>Nama</th><th>Jabatan</th><th style="width:180px;">Keterangan Absen</th></tr></thead>
+          <tbody>${bodyRows}</tbody>
+        </table>
+        <div class="laporan-footer">
+          <div class="laporan-ttd">
+            <div>Guru Pembina</div>
+            <div class="laporan-ttd-space"></div>
+            <div><b>${esc(guru)}</b></div>
+          </div>
+        </div>
+      </div>`;
+  }
+  function ensureLaporanPage(){
+    if(byId('laporanAbsenPage')) return;
+    const content=document.querySelector('.content');
+    if(!content) return;
+    const div=document.createElement('div');
+    div.id='laporanAbsenPage';
+    div.className='card hidden';
+    div.innerHTML=`
+      <h2>Laporan Absen Harian</h2>
+      <p style="color:#64748b;margin-top:-8px;">Khusus guru untuk print/download laporan absensi per hari.</p>
+      <div class="laporan-filter">
+        <div>
+          <label>Tanggal Laporan</label>
+          <input type="date" id="laporanAbsenTanggal">
+        </div>
+        <button class="btn-blue" type="button" onclick="renderLaporanAbsenHarian()">Tampilkan</button>
+        <button class="btn-green" type="button" onclick="downloadLaporanAbsenHarian()">Download</button>
+        <button class="btn-gray" type="button" onclick="printLaporanAbsenHarian()">Print</button>
+      </div>
+      <div class="laporan-preview" id="laporanPrintArea"></div>
+    `;
+    content.appendChild(div);
+    const date=byId('laporanAbsenTanggal');
+    if(date) date.value=todayISO();
+  }
+  function ensureLaporanNav(){
+    if(byId('btnLaporanAbsen')) return;
+    const btnRiwayat=document.querySelector("button[onclick*=\"riwayatPage\"]");
+    const nav=btnRiwayat ? btnRiwayat.parentElement : document.querySelector('.nav');
+    if(!nav) return;
+    const btn=document.createElement('button');
+    btn.id='btnLaporanAbsen';
+    btn.innerHTML='<span class="nav-icon">🧾</span> Laporan Absen';
+    btn.onclick=function(){showPage('laporanAbsenPage',this);};
+    if(btnRiwayat) nav.insertBefore(btn,btnRiwayat); else nav.appendChild(btn);
+  }
+  function updateLaporanAccess(){
+    const btn=byId('btnLaporanAbsen');
+    const page=byId('laporanAbsenPage');
+    const show=currentUser && currentUser.role === 'guru';
+    if(btn) btn.style.display=show?'flex':'none';
+    if(page && !show) page.classList.add('hidden');
+  }
+  window.renderLaporanAbsenHarian=function(){
+    ensureLaporanPage();
+    const area=byId('laporanPrintArea');
+    if(area) area.innerHTML=makeReportHTML();
+  };
+  window.printLaporanAbsenHarian=function(){
+    renderLaporanAbsenHarian();
+    setTimeout(function(){window.print();},120);
+  };
+  window.downloadLaporanAbsenHarian=function(){
+    renderLaporanAbsenHarian();
+    const iso=(byId('laporanAbsenTanggal') && byId('laporanAbsenTanggal').value) || todayISO();
+    const html='<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Laporan Absensi Pramuka Inti</title><style>'+document.getElementById('pasprapati-laporan-absen-css').innerHTML+'</style></head><body>'+makeReportHTML()+'</body></html>';
+    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='laporan-absensi-pramuka-inti-'+iso+'.html';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(function(){URL.revokeObjectURL(a.href);},500);
+  };
+  const oldShowPage=window.showPage;
+  window.showPage=function(id,btn){
+    ensureLaporanPage(); ensureLaporanNav(); updateLaporanAccess();
+    if(id==='laporanAbsenPage'){
+      if(!currentUser || currentUser.role !== 'guru'){
+        if(typeof showError==='function') showError('Laporan absen hanya bisa dibuka oleh guru');
+        return;
+      }
+      const pages=['dashboardPage','editAkunPage','assessmentPage','absenPage','siswaPage','nilaiPage','agendaPage','uploadDokumenPage','kelolaBeritaPage','sakitPage','izinPage','accPage','historiRegistrasiPage','riwayatPage','laporanAbsenPage'];
+      pages.forEach(function(pid){const el=byId(pid); if(el) el.classList.add('hidden');});
+      const page=byId('laporanAbsenPage'); if(page) page.classList.remove('hidden');
+      const title=byId('pageTitle'); if(title) title.innerText='Laporan Absen Harian';
+      document.querySelectorAll('.nav button').forEach(function(b){b.classList.remove('active');});
+      if(btn) btn.classList.add('active');
+      renderLaporanAbsenHarian();
+      return;
+    }
+    if(typeof oldShowPage==='function') oldShowPage(id,btn);
+    const page=byId('laporanAbsenPage'); if(page) page.classList.add('hidden');
+    updateLaporanAccess();
+  };
+  const oldUpdateDashboard=window.updateDashboard;
+  window.updateDashboard=function(){
+    if(typeof oldUpdateDashboard==='function') oldUpdateDashboard();
+    ensureLaporanNav(); updateLaporanAccess();
+  };
+  document.addEventListener('DOMContentLoaded',function(){ensureLaporanPage();ensureLaporanNav();updateLaporanAccess();renderLaporanAbsenHarian();});
+  window.addEventListener('load',function(){setTimeout(function(){ensureLaporanPage();ensureLaporanNav();updateLaporanAccess();renderLaporanAbsenHarian();},500);});
 })();
 </script>
 
