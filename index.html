@@ -1385,6 +1385,82 @@ body:not(.auth-loading) #loadingOverlay{display:none!important;}
   50%{transform:scale(1.12);opacity:1;}
 }
 </style>
+
+
+<style id="pasprapati-print-portrait-final">
+/* FINAL: print laporan absen dibuat A4 portrait */
+@page{
+  size:A4 portrait;
+  margin:12mm;
+}
+@media print{
+  @page{
+    size:A4 portrait;
+    margin:12mm;
+  }
+  body{
+    background:#fff!important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+  body *{visibility:hidden!important;}
+  #laporanPrintArea,#laporanPrintArea *{visibility:visible!important;}
+  #laporanPrintArea{
+    position:absolute!important;
+    left:0!important;
+    top:0!important;
+    width:100%!important;
+    padding:0!important;
+    margin:0!important;
+    border:0!important;
+    box-shadow:none!important;
+  }
+  .laporan-preview{
+    border:0!important;
+    padding:0!important;
+    margin:0!important;
+    box-shadow:none!important;
+  }
+  .laporan-print-paper{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:0!important;
+    box-shadow:none!important;
+    border:0!important;
+  }
+  .laporan-logo{
+    width:72px!important;
+    height:72px!important;
+  }
+  .laporan-title{
+    font-size:18px!important;
+  }
+  .laporan-table{
+    width:100%!important;
+    border-collapse:collapse!important;
+    table-layout:fixed!important;
+  }
+  .laporan-table th,.laporan-table td{
+    border:1px solid #111827!important;
+    padding:6px 7px!important;
+    font-size:11px!important;
+    word-break:break-word!important;
+  }
+  .status-report{
+    color:#111827!important;
+    background:#fff!important;
+    border:1px solid #111827!important;
+    padding:3px 7px!important;
+    font-size:10px!important;
+  }
+  .laporan-footer{
+    margin-top:28px!important;
+    page-break-inside:avoid!important;
+  }
+}
+</style>
+
 </head>
 
 <body class="auth-loading">
@@ -6548,7 +6624,7 @@ window.addEventListener("load", async()=>{
           <input type="date" id="laporanAbsenTanggal">
         </div>
         <button class="btn-blue" type="button" onclick="renderLaporanAbsenHarian()">Tampilkan</button>
-        <button class="btn-green" type="button" onclick="downloadLaporanAbsenHarian()">Download</button>
+        <button class="btn-green" type="button" onclick="downloadLaporanAbsenHarian()">Download PDF</button>
         <button class="btn-gray" type="button" onclick="printLaporanAbsenHarian()">Print</button>
       </div>
       <div class="laporan-preview" id="laporanPrintArea"></div>
@@ -6587,7 +6663,241 @@ window.addEventListener("load", async()=>{
   window.downloadLaporanAbsenHarian=function(){
     renderLaporanAbsenHarian();
     const iso=(byId('laporanAbsenTanggal') && byId('laporanAbsenTanggal').value) || todayISO();
-    const html='<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Laporan Absensi Pramuka Inti</title><style>'+document.getElementById('pasprapati-laporan-absen-css').innerHTML+'</style></head><body>'+makeReportHTML()+'</body></html>';
+    const html='<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Laporan Absensi Pramuka Inti</title><style>'+document.getElementById('pasprapati-laporan-absen-css').innerHTML+'</style></head><body>'+makeReportHTML()+'
+
+<style id="pasprapati-ttd-pembina-css">
+.laporan-filter{
+  grid-template-columns:1fr 1fr auto auto auto!important;
+}
+.laporan-ttd-name{
+  border-bottom:1px solid #111827;
+  padding-bottom:4px;
+  min-height:22px;
+}
+@media(max-width:900px){.laporan-filter{grid-template-columns:1fr!important}}
+@media print{
+  .laporan-ttd-name{border-bottom:1px solid #111827!important;}
+}
+</style>
+
+<script id="pasprapati-ttd-pembina-js">
+/* ================= DROPDOWN TANDA TANGAN PEMBINA ================= */
+(function(){
+  function byId(id){return document.getElementById(id);}
+  function pad(n){return String(n).padStart(2,'0');}
+  function todayISO(){const d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+  function nowFull(){return new Date().toLocaleString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});}
+  function tanggalPanjang(iso){const d=new Date((iso||todayISO())+'T00:00:00');return isNaN(d)?iso:d.toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'});}
+  function esc(v){return String(v ?? '-').replace(/[&<>'"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c];});}
+  function normalizeStatus(v){
+    const s=String(v||'').toLowerCase();
+    if(s.includes('sakit')) return 'Sakit';
+    if(s.includes('izin')) return 'Izin';
+    if(s.includes('alpha')) return 'Alpha';
+    if(s.includes('hadir') || s.includes('masuk') || s.includes('pulang')) return 'Hadir';
+    return '';
+  }
+  function getRfid(s){return String(s.rfid || s.rfidSiswa || s.loginRFID || '').trim();}
+  function getNama(s){return s.nama || s.fullName || s.name || '-';}
+  function getJabatan(s){return s.jabatan || s.role || s.tingkatan || '-';}
+  function getDateISOFromAbsen(a){
+    if(a && a.tanggalISO) return String(a.tanggalISO);
+    const raw=String((a && a.tanggal) || '').trim();
+    const m=raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if(m) return m[3]+'-'+pad(m[2])+'-'+pad(m[1]);
+    const d=new Date(raw);
+    if(!isNaN(d)) return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+    return '';
+  }
+  function getStatusForStudent(stu, iso){
+    const rfid=getRfid(stu);
+    const nama=getNama(stu).trim().toLowerCase();
+    const rows=(Array.isArray(absensi)?absensi:[]).filter(function(a){
+      const sameDate=getDateISOFromAbsen(a)===iso;
+      const sameRfid=rfid && String(a.rfid||'').trim()===rfid;
+      const sameName=String(a.nama||'').trim().toLowerCase()===nama;
+      return sameDate && (sameRfid || sameName);
+    });
+    if(!rows.length) return {status:'Alpha',jam:'-'};
+    const priority={Sakit:4,Izin:3,Alpha:2,Hadir:1};
+    rows.sort(function(a,b){return (priority[normalizeStatus(b.status)||'Hadir']||0)-(priority[normalizeStatus(a.status)||'Hadir']||0);});
+    const picked=rows[0];
+    return {status:normalizeStatus(picked.status)||'Hadir',jam:picked.jam || picked.masuk || picked.pulang || '-'};
+  }
+  function getPembinaNames(){
+    const names=[];
+    function add(n){n=String(n||'').trim(); if(n && !names.includes(n)) names.push(n);}
+    if(Array.isArray(users)) users.forEach(function(u){ if(u && u.role==='guru') add(u.fullName || u.nama || u.username); });
+    if(window.currentUser && currentUser.role==='guru') add(currentUser.fullName || currentUser.nama || currentUser.username);
+    add('Pembina Pramuka');
+    return names;
+  }
+  function ensurePembinaDropdown(){
+    if(byId('laporanPembinaSelect')) return;
+    const filter=document.querySelector('#laporanAbsenPage .laporan-filter');
+    if(!filter) return;
+    const wrap=document.createElement('div');
+    wrap.id='laporanPembinaWrap';
+    wrap.innerHTML='<label>Tanda Tangan Pembina</label><select id="laporanPembinaSelect" onchange="renderLaporanAbsenHarian()"></select>';
+    const firstBtn=filter.querySelector('button');
+    filter.insertBefore(wrap, firstBtn);
+    isiPembinaDropdown();
+  }
+  function isiPembinaDropdown(){
+    const sel=byId('laporanPembinaSelect');
+    if(!sel) return;
+    const old=sel.value;
+    sel.innerHTML=getPembinaNames().map(function(n){return '<option value="'+esc(n)+'">'+esc(n)+'</option>';}).join('') + '<option value="__manual__">Ketik manual...</option>';
+    if(old) sel.value=old;
+    sel.onchange=function(){
+      if(sel.value==='__manual__'){
+        const nama=prompt('Masukkan nama pembina:', '');
+        if(nama && nama.trim()){
+          const opt=document.createElement('option');
+          opt.value=nama.trim(); opt.textContent=nama.trim();
+          sel.insertBefore(opt, sel.lastElementChild);
+          sel.value=nama.trim();
+        }else{
+          sel.selectedIndex=0;
+        }
+      }
+      renderLaporanAbsenHarian();
+    };
+  }
+  function getPembinaName(){
+    ensurePembinaDropdown();
+    const sel=byId('laporanPembinaSelect');
+    if(sel && sel.value && sel.value!=='__manual__') return sel.value;
+    return (currentUser && (currentUser.fullName || currentUser.username)) || 'Pembina Pramuka';
+  }
+  function getReportRows(){
+    const iso=(byId('laporanAbsenTanggal') && byId('laporanAbsenTanggal').value) || todayISO();
+    const data=(Array.isArray(siswa)?siswa:[]).filter(function(s){return getNama(s) !== '-';});
+    return data.map(function(s,idx){const st=getStatusForStudent(s,iso);return {no:idx+1,nama:getNama(s),jabatan:getJabatan(s),status:st.status,jam:st.jam};});
+  }
+  function makeReportHTMLPembina(){
+    const iso=(byId('laporanAbsenTanggal') && byId('laporanAbsenTanggal').value) || todayISO();
+    const rows=getReportRows();
+    const pembina=getPembinaName();
+    const bodyRows=rows.length ? rows.map(function(r){
+      const cls=String(r.status||'').toLowerCase();
+      const label=r.jam && r.jam !== '-' ? r.status+' ('+r.jam+')' : r.status;
+      return `<tr><td>${r.no}</td><td>${esc(r.nama)}</td><td>${esc(r.jabatan)}</td><td><span class="status-report ${esc(cls)}">${esc(label)}</span></td></tr>`;
+    }).join('') : `<tr><td colspan="4" style="text-align:center;padding:18px;">Belum ada data siswa.</td></tr>`;
+    return `
+      <div class="laporan-print-paper">
+        <div class="laporan-header">
+          <img src="pasprapatii.png" class="laporan-logo" onerror="this.style.display='none'">
+          <div class="laporan-title">
+            <h1>Laporan Absensi Pramuka Inti</h1>
+            <p>PASPRAPATI - Pramuka System</p>
+          </div>
+        </div>
+        <div class="laporan-meta">
+          <div><b>Tanggal Absen:</b> ${esc(tanggalPanjang(iso))}</div>
+          <div><b>Dicetak:</b> ${esc(nowFull())}</div>
+        </div>
+        <table class="laporan-table">
+          <thead><tr><th style="width:60px;">Nomor</th><th>Nama</th><th>Jabatan</th><th style="width:180px;">Keterangan Absen</th></tr></thead>
+          <tbody>${bodyRows}</tbody>
+        </table>
+        <div class="laporan-footer">
+          <div class="laporan-ttd">
+            <div>Pembina Pramuka</div>
+            <div class="laporan-ttd-space"></div>
+            <div class="laporan-ttd-name"><b>${esc(pembina)}</b></div>
+          </div>
+        </div>
+      </div>`;
+  }
+  const oldEnsurePage=window.ensureLaporanPage;
+  const oldRender=window.renderLaporanAbsenHarian;
+  window.renderLaporanAbsenHarian=function(){
+    if(typeof oldRender==='function') oldRender();
+    ensurePembinaDropdown();
+    isiPembinaDropdown();
+    const area=byId('laporanPrintArea');
+    if(area) area.innerHTML=makeReportHTMLPembina();
+  };
+  window.printLaporanAbsenHarian=function(){
+    renderLaporanAbsenHarian();
+    setTimeout(function(){window.print();},120);
+  };
+  window.downloadLaporanAbsenHarian=function(){
+    renderLaporanAbsenHarian();
+    const iso=(byId('laporanAbsenTanggal') && byId('laporanAbsenTanggal').value) || todayISO();
+    const css=(byId('pasprapati-laporan-absen-css')?byId('pasprapati-laporan-absen-css').innerHTML:'')+(byId('pasprapati-ttd-pembina-css')?byId('pasprapati-ttd-pembina-css').innerHTML:'');
+    const html='<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Laporan Absensi Pramuka Inti</title><style>'+css+'</style></head><body>'+makeReportHTMLPembina()+'</body></html>';
+    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='laporan-absensi-pramuka-inti-'+iso+'.html';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(function(){URL.revokeObjectURL(a.href);},500);
+  };
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){ensurePembinaDropdown();renderLaporanAbsenHarian();},700);});
+  window.addEventListener('load',function(){setTimeout(function(){ensurePembinaDropdown();renderLaporanAbsenHarian();},900);});
+})();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script id="pasprapati-download-pdf-final">
+(function(){
+  function byId(id){return document.getElementById(id);}
+  function todayISO(){return new Date().toISOString().slice(0,10);}
+  function safeFileName(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');}
+
+  function setDownloadButtonText(){
+    document.querySelectorAll('button').forEach(function(btn){
+      if((btn.getAttribute('onclick')||'').includes('downloadLaporanAbsenHarian')){
+        btn.innerHTML='📄 Download PDF';
+      }
+    });
+  }
+
+  const oldRenderPdf = window.renderLaporanAbsenHarian;
+  window.renderLaporanAbsenHarian=function(){
+    if(typeof oldRenderPdf==='function') oldRenderPdf();
+    setDownloadButtonText();
+  };
+
+  window.downloadLaporanAbsenHarian=function(){
+    if(typeof window.renderLaporanAbsenHarian==='function') window.renderLaporanAbsenHarian();
+
+    const area = byId('laporanPrintArea') || byId('printArea');
+    const paper = area ? (area.querySelector('.laporan-print-paper') || area) : null;
+
+    if(!paper){
+      alert('Area laporan belum ditemukan. Klik Tampilkan dulu.');
+      return;
+    }
+
+    if(typeof html2pdf === 'undefined'){
+      alert('Library PDF belum termuat. Pastikan internet aktif, lalu coba lagi.');
+      return;
+    }
+
+    const iso = (byId('laporanAbsenTanggal') && byId('laporanAbsenTanggal').value) || todayISO();
+    const fileName = 'laporan-absensi-pramuka-inti-' + safeFileName(iso) + '.pdf';
+
+    const opt = {
+      margin: [10, 10, 10, 10],
+      filename: fileName,
+      image: { type: 'jpeg', quality: 1 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+
+    html2pdf().set(opt).from(paper).save();
+  };
+
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(setDownloadButtonText,600);});
+  window.addEventListener('load',function(){setTimeout(setDownloadButtonText,900);});
+})();
+</script>
+
+</body></html>';
     const blob=new Blob([html],{type:'text/html;charset=utf-8'});
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
@@ -6623,6 +6933,240 @@ window.addEventListener("load", async()=>{
   };
   document.addEventListener('DOMContentLoaded',function(){ensureLaporanPage();ensureLaporanNav();updateLaporanAccess();renderLaporanAbsenHarian();});
   window.addEventListener('load',function(){setTimeout(function(){ensureLaporanPage();ensureLaporanNav();updateLaporanAccess();renderLaporanAbsenHarian();},500);});
+})();
+</script>
+
+
+
+<style id="pasprapati-ttd-pembina-css">
+.laporan-filter{
+  grid-template-columns:1fr 1fr auto auto auto!important;
+}
+.laporan-ttd-name{
+  border-bottom:1px solid #111827;
+  padding-bottom:4px;
+  min-height:22px;
+}
+@media(max-width:900px){.laporan-filter{grid-template-columns:1fr!important}}
+@media print{
+  .laporan-ttd-name{border-bottom:1px solid #111827!important;}
+}
+</style>
+
+<script id="pasprapati-ttd-pembina-js">
+/* ================= DROPDOWN TANDA TANGAN PEMBINA ================= */
+(function(){
+  function byId(id){return document.getElementById(id);}
+  function pad(n){return String(n).padStart(2,'0');}
+  function todayISO(){const d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+  function nowFull(){return new Date().toLocaleString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});}
+  function tanggalPanjang(iso){const d=new Date((iso||todayISO())+'T00:00:00');return isNaN(d)?iso:d.toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'});}
+  function esc(v){return String(v ?? '-').replace(/[&<>'"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c];});}
+  function normalizeStatus(v){
+    const s=String(v||'').toLowerCase();
+    if(s.includes('sakit')) return 'Sakit';
+    if(s.includes('izin')) return 'Izin';
+    if(s.includes('alpha')) return 'Alpha';
+    if(s.includes('hadir') || s.includes('masuk') || s.includes('pulang')) return 'Hadir';
+    return '';
+  }
+  function getRfid(s){return String(s.rfid || s.rfidSiswa || s.loginRFID || '').trim();}
+  function getNama(s){return s.nama || s.fullName || s.name || '-';}
+  function getJabatan(s){return s.jabatan || s.role || s.tingkatan || '-';}
+  function getDateISOFromAbsen(a){
+    if(a && a.tanggalISO) return String(a.tanggalISO);
+    const raw=String((a && a.tanggal) || '').trim();
+    const m=raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if(m) return m[3]+'-'+pad(m[2])+'-'+pad(m[1]);
+    const d=new Date(raw);
+    if(!isNaN(d)) return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+    return '';
+  }
+  function getStatusForStudent(stu, iso){
+    const rfid=getRfid(stu);
+    const nama=getNama(stu).trim().toLowerCase();
+    const rows=(Array.isArray(absensi)?absensi:[]).filter(function(a){
+      const sameDate=getDateISOFromAbsen(a)===iso;
+      const sameRfid=rfid && String(a.rfid||'').trim()===rfid;
+      const sameName=String(a.nama||'').trim().toLowerCase()===nama;
+      return sameDate && (sameRfid || sameName);
+    });
+    if(!rows.length) return {status:'Alpha',jam:'-'};
+    const priority={Sakit:4,Izin:3,Alpha:2,Hadir:1};
+    rows.sort(function(a,b){return (priority[normalizeStatus(b.status)||'Hadir']||0)-(priority[normalizeStatus(a.status)||'Hadir']||0);});
+    const picked=rows[0];
+    return {status:normalizeStatus(picked.status)||'Hadir',jam:picked.jam || picked.masuk || picked.pulang || '-'};
+  }
+  function getPembinaNames(){
+    const names=[];
+    function add(n){n=String(n||'').trim(); if(n && !names.includes(n)) names.push(n);}
+    if(Array.isArray(users)) users.forEach(function(u){ if(u && u.role==='guru') add(u.fullName || u.nama || u.username); });
+    if(window.currentUser && currentUser.role==='guru') add(currentUser.fullName || currentUser.nama || currentUser.username);
+    add('Pembina Pramuka');
+    return names;
+  }
+  function ensurePembinaDropdown(){
+    if(byId('laporanPembinaSelect')) return;
+    const filter=document.querySelector('#laporanAbsenPage .laporan-filter');
+    if(!filter) return;
+    const wrap=document.createElement('div');
+    wrap.id='laporanPembinaWrap';
+    wrap.innerHTML='<label>Tanda Tangan Pembina</label><select id="laporanPembinaSelect" onchange="renderLaporanAbsenHarian()"></select>';
+    const firstBtn=filter.querySelector('button');
+    filter.insertBefore(wrap, firstBtn);
+    isiPembinaDropdown();
+  }
+  function isiPembinaDropdown(){
+    const sel=byId('laporanPembinaSelect');
+    if(!sel) return;
+    const old=sel.value;
+    sel.innerHTML=getPembinaNames().map(function(n){return '<option value="'+esc(n)+'">'+esc(n)+'</option>';}).join('') + '<option value="__manual__">Ketik manual...</option>';
+    if(old) sel.value=old;
+    sel.onchange=function(){
+      if(sel.value==='__manual__'){
+        const nama=prompt('Masukkan nama pembina:', '');
+        if(nama && nama.trim()){
+          const opt=document.createElement('option');
+          opt.value=nama.trim(); opt.textContent=nama.trim();
+          sel.insertBefore(opt, sel.lastElementChild);
+          sel.value=nama.trim();
+        }else{
+          sel.selectedIndex=0;
+        }
+      }
+      renderLaporanAbsenHarian();
+    };
+  }
+  function getPembinaName(){
+    ensurePembinaDropdown();
+    const sel=byId('laporanPembinaSelect');
+    if(sel && sel.value && sel.value!=='__manual__') return sel.value;
+    return (currentUser && (currentUser.fullName || currentUser.username)) || 'Pembina Pramuka';
+  }
+  function getReportRows(){
+    const iso=(byId('laporanAbsenTanggal') && byId('laporanAbsenTanggal').value) || todayISO();
+    const data=(Array.isArray(siswa)?siswa:[]).filter(function(s){return getNama(s) !== '-';});
+    return data.map(function(s,idx){const st=getStatusForStudent(s,iso);return {no:idx+1,nama:getNama(s),jabatan:getJabatan(s),status:st.status,jam:st.jam};});
+  }
+  function makeReportHTMLPembina(){
+    const iso=(byId('laporanAbsenTanggal') && byId('laporanAbsenTanggal').value) || todayISO();
+    const rows=getReportRows();
+    const pembina=getPembinaName();
+    const bodyRows=rows.length ? rows.map(function(r){
+      const cls=String(r.status||'').toLowerCase();
+      const label=r.jam && r.jam !== '-' ? r.status+' ('+r.jam+')' : r.status;
+      return `<tr><td>${r.no}</td><td>${esc(r.nama)}</td><td>${esc(r.jabatan)}</td><td><span class="status-report ${esc(cls)}">${esc(label)}</span></td></tr>`;
+    }).join('') : `<tr><td colspan="4" style="text-align:center;padding:18px;">Belum ada data siswa.</td></tr>`;
+    return `
+      <div class="laporan-print-paper">
+        <div class="laporan-header">
+          <img src="pasprapatii.png" class="laporan-logo" onerror="this.style.display='none'">
+          <div class="laporan-title">
+            <h1>Laporan Absensi Pramuka Inti</h1>
+            <p>PASPRAPATI - Pramuka System</p>
+          </div>
+        </div>
+        <div class="laporan-meta">
+          <div><b>Tanggal Absen:</b> ${esc(tanggalPanjang(iso))}</div>
+          <div><b>Dicetak:</b> ${esc(nowFull())}</div>
+        </div>
+        <table class="laporan-table">
+          <thead><tr><th style="width:60px;">Nomor</th><th>Nama</th><th>Jabatan</th><th style="width:180px;">Keterangan Absen</th></tr></thead>
+          <tbody>${bodyRows}</tbody>
+        </table>
+        <div class="laporan-footer">
+          <div class="laporan-ttd">
+            <div>Pembina Pramuka</div>
+            <div class="laporan-ttd-space"></div>
+            <div class="laporan-ttd-name"><b>${esc(pembina)}</b></div>
+          </div>
+        </div>
+      </div>`;
+  }
+  const oldEnsurePage=window.ensureLaporanPage;
+  const oldRender=window.renderLaporanAbsenHarian;
+  window.renderLaporanAbsenHarian=function(){
+    if(typeof oldRender==='function') oldRender();
+    ensurePembinaDropdown();
+    isiPembinaDropdown();
+    const area=byId('laporanPrintArea');
+    if(area) area.innerHTML=makeReportHTMLPembina();
+  };
+  window.printLaporanAbsenHarian=function(){
+    renderLaporanAbsenHarian();
+    setTimeout(function(){window.print();},120);
+  };
+  window.downloadLaporanAbsenHarian=function(){
+    renderLaporanAbsenHarian();
+    const iso=(byId('laporanAbsenTanggal') && byId('laporanAbsenTanggal').value) || todayISO();
+    const css=(byId('pasprapati-laporan-absen-css')?byId('pasprapati-laporan-absen-css').innerHTML:'')+(byId('pasprapati-ttd-pembina-css')?byId('pasprapati-ttd-pembina-css').innerHTML:'');
+    const html='<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Laporan Absensi Pramuka Inti</title><style>'+css+'</style></head><body>'+makeReportHTMLPembina()+'</body></html>';
+    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='laporan-absensi-pramuka-inti-'+iso+'.html';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(function(){URL.revokeObjectURL(a.href);},500);
+  };
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){ensurePembinaDropdown();renderLaporanAbsenHarian();},700);});
+  window.addEventListener('load',function(){setTimeout(function(){ensurePembinaDropdown();renderLaporanAbsenHarian();},900);});
+})();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script id="pasprapati-download-pdf-final">
+(function(){
+  function byId(id){return document.getElementById(id);}
+  function todayISO(){return new Date().toISOString().slice(0,10);}
+  function safeFileName(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');}
+
+  function setDownloadButtonText(){
+    document.querySelectorAll('button').forEach(function(btn){
+      if((btn.getAttribute('onclick')||'').includes('downloadLaporanAbsenHarian')){
+        btn.innerHTML='📄 Download PDF';
+      }
+    });
+  }
+
+  const oldRenderPdf = window.renderLaporanAbsenHarian;
+  window.renderLaporanAbsenHarian=function(){
+    if(typeof oldRenderPdf==='function') oldRenderPdf();
+    setDownloadButtonText();
+  };
+
+  window.downloadLaporanAbsenHarian=function(){
+    if(typeof window.renderLaporanAbsenHarian==='function') window.renderLaporanAbsenHarian();
+
+    const area = byId('laporanPrintArea') || byId('printArea');
+    const paper = area ? (area.querySelector('.laporan-print-paper') || area) : null;
+
+    if(!paper){
+      alert('Area laporan belum ditemukan. Klik Tampilkan dulu.');
+      return;
+    }
+
+    if(typeof html2pdf === 'undefined'){
+      alert('Library PDF belum termuat. Pastikan internet aktif, lalu coba lagi.');
+      return;
+    }
+
+    const iso = (byId('laporanAbsenTanggal') && byId('laporanAbsenTanggal').value) || todayISO();
+    const fileName = 'laporan-absensi-pramuka-inti-' + safeFileName(iso) + '.pdf';
+
+    const opt = {
+      margin: [10, 10, 10, 10],
+      filename: fileName,
+      image: { type: 'jpeg', quality: 1 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+
+    html2pdf().set(opt).from(paper).save();
+  };
+
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(setDownloadButtonText,600);});
+  window.addEventListener('load',function(){setTimeout(setDownloadButtonText,900);});
 })();
 </script>
 
