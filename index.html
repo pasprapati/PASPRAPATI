@@ -1208,6 +1208,22 @@ body.auth-loading #appPage{
 }
 
 </style>
+
+<style id="pasprapati-no-white-refresh">
+body.auth-loading{visibility:hidden;}
+#loadingOverlay{
+ position:fixed;inset:0;background:#0f172a;
+ display:flex;align-items:center;justify-content:center;
+ z-index:999999;
+}
+.loader{
+ width:60px;height:60px;border:5px solid rgba(255,255,255,.2);
+ border-top-color:#38bdf8;border-radius:50%;
+ animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+
 </head>
 
 <body class="auth-loading">
