@@ -1347,6 +1347,44 @@ body:not(.auth-loading) #loadingOverlay{
   100%{transform:scale(.86);opacity:.72}
 }
 </style>
+
+<style id="pasprapati-session-loading-fix">
+body.auth-loading{
+  visibility:visible!important;
+  overflow:hidden!important;
+  background:linear-gradient(135deg,#069bd8,#064f6c)!important;
+}
+body.auth-loading #loginPage,
+body.auth-loading #registerPage,
+body.auth-loading #appPage{
+  display:none!important;
+}
+body:not(.auth-loading) #loadingOverlay{display:none!important;}
+#loadingOverlay{
+  position:fixed!important;
+  inset:0!important;
+  background:linear-gradient(135deg,#069bd8,#064f6c)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  z-index:999999!important;
+}
+#loadingOverlay .loader,
+#loadingOverlay .loader-box,
+#loadingOverlay b{display:none!important;}
+#loadingOverlay .loading-logo{
+  display:block!important;
+  width:185px!important;
+  height:185px!important;
+  object-fit:contain!important;
+  animation:pasprapatiLogoPulse 1.25s ease-in-out infinite!important;
+  filter:drop-shadow(0 15px 32px rgba(255,255,255,.28))!important;
+}
+@keyframes pasprapatiLogoPulse{
+  0%,100%{transform:scale(.86);opacity:.72;}
+  50%{transform:scale(1.12);opacity:1;}
+}
+</style>
 </head>
 
 <body class="auth-loading">
@@ -5340,12 +5378,22 @@ function updateClock(){
 
 function autoLoginSetelahRefresh(){
   try{
-    const saved = JSON.parse(localStorage.getItem("pasprapati_login_aktif") || "null");
-    if(!saved || !saved.username) return false;
+    const savedLogin = JSON.parse(localStorage.getItem("pasprapati_login_aktif") || "null");
+    const savedUser = JSON.parse(localStorage.getItem("pasprapati_current_user") || "null");
+    const username = (savedLogin && savedLogin.username) ? savedLogin.username : (savedUser && savedUser.username ? savedUser.username : "");
+    if(!username) return false;
 
-    const found = users.find(u => String(u.username || "") === String(saved.username || ""));
+    let found = users.find(u => String(u.username || "") === String(username || ""));
+    if(!found && savedUser && savedUser.username){
+      found = savedUser;
+      if(!users.some(u => String(u.username || "") === String(found.username || ""))){
+        users.push(found);
+        try{ localStorage.setItem("pasprapati_users", JSON.stringify(users)); }catch(e){}
+      }
+    }
     if(!found){
       localStorage.removeItem("pasprapati_login_aktif");
+      localStorage.removeItem("pasprapati_current_user");
       return false;
     }
 
@@ -5355,6 +5403,7 @@ function autoLoginSetelahRefresh(){
   }catch(err){
     console.error("Auto login gagal:", err);
     localStorage.removeItem("pasprapati_login_aktif");
+    localStorage.removeItem("pasprapati_current_user");
     return false;
   }
 }
@@ -5961,15 +6010,314 @@ window.addEventListener("load", async()=>{
 
   window.addEventListener('load', function(){
     try{ updateRegisterRFIDPlaceholder(); }catch(e){}
+    /* Jangan hapus auth-loading di sini.
+       Loading ditutup oleh proses utama setelah cek session/auto-login selesai,
+       supaya refresh tidak mental balik ke halaman login. */
+  });
+})();
+</script>
+
+
+
+<style id="pasprapati-manual-absen-dashboard-css">
+/* LOADING LOGO SAJA - TANPA TEKS/SPINNER */
+#loadingOverlay .loader,
+#loadingOverlay .loader-box b{display:none!important;}
+#loadingOverlay .loader-box{display:flex!important;align-items:center!important;justify-content:center!important;}
+#loadingOverlay .loading-logo{
+  display:block!important;
+  width:190px!important;
+  height:190px!important;
+  object-fit:contain!important;
+  animation:pasprapatiLogoPulse 1.25s ease-in-out infinite!important;
+  filter:drop-shadow(0 16px 32px rgba(255,255,255,.28));
+}
+@keyframes pasprapatiLogoPulse{
+  0%,100%{transform:scale(.86);opacity:.72;}
+  50%{transform:scale(1.12);opacity:1;}
+}
+.manual-absen-card{
+  margin-top:22px;
+  background:linear-gradient(180deg,#ffffff,#f8fafc);
+  border:1px solid #e2e8f0;
+  border-radius:24px;
+  padding:22px;
+  box-shadow:0 10px 28px rgba(15,23,42,.06);
+}
+.manual-absen-card h3{margin:0 0 6px;color:#0f172a;font-size:22px;}
+.manual-absen-card p{margin:0 0 14px;color:#64748b;font-size:13px;line-height:1.45;}
+.manual-absen-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.manual-absen-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+.monthly-attendance-card{
+  margin:16px 0 18px;
+  padding:18px;
+  border-radius:22px;
+  background:linear-gradient(135deg,#ffffff,#eff6ff);
+  border:1px solid #bae6fd;
+}
+.monthly-attendance-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px;}
+.monthly-attendance-head b{font-size:16px;color:#0f172a;}
+.monthly-attendance-head span{font-size:12px;color:#64748b;}
+.monthly-attendance-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.monthly-attendance-item{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:14px;text-align:center;box-shadow:0 8px 18px rgba(15,23,42,.05);}
+.monthly-attendance-item .num{font-size:28px;font-weight:900;color:#075985;margin-bottom:4px;}
+.monthly-attendance-item .label{font-size:12px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.4px;}
+@media(max-width:700px){.manual-absen-grid,.monthly-attendance-grid{grid-template-columns:1fr 1fr}.monthly-attendance-head{flex-direction:column;align-items:flex-start}}
+</style>
+
+<script id="pasprapati-manual-absen-dashboard-js">
+/* ================= ABSEN MANUAL + DASHBOARD BULANAN ================= */
+(function(){
+  function byId(id){return document.getElementById(id);}
+  function pad(n){return String(n).padStart(2,'0');}
+  function todayISO(){const d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+  function nowTime(){return new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});}
+  function bulanKey(date){return date.getFullYear()+"-"+pad(date.getMonth()+1);}
+  function bulanLabel(date){return date.toLocaleDateString('id-ID',{month:'long',year:'numeric'});}
+  function esc(v){return String(v ?? '-').replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c];});}
+  function parseDateFromAbsen(a){
+    if(a && a.tanggalISO){const d=new Date(a.tanggalISO+'T00:00:00'); if(!isNaN(d)) return d;}
+    const t=String((a && a.tanggal) || '').trim();
+    const m=t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if(m){return new Date(Number(m[3]), Number(m[2])-1, Number(m[1]));}
+    const d=new Date(t);
+    if(!isNaN(d)) return d;
+    return null;
+  }
+  function getStatusAbsen(a){
+    const s=String((a && a.status) || '').toLowerCase();
+    if(s.includes('alpha')) return 'Alpha';
+    if(s.includes('izin')) return 'Izin';
+    if(s.includes('sakit')) return 'Sakit';
+    if(s.includes('hadir') || s.includes('masuk') || s.includes('pulang') || (a && (a.masuk || a.jam))) return 'Hadir';
+    return 'Hadir';
+  }
+  function isMemberUser(){return currentUser && (currentUser.role === 'siswa' || currentUser.role === 'bph');}
+  function sameStudent(a){
+    if(!isMemberUser()) return true;
+    const nama=currentUser.fullName || currentUser.username || '';
+    const rfid=currentUser.rfidSiswa || currentUser.loginRFID || '';
+    return (rfid && String(a.rfid || '').trim() === String(rfid).trim()) || String(a.nama || '').trim() === String(nama).trim();
+  }
+  function getMonthlyCounts(){
+    const now=new Date();
+    const key=bulanKey(now);
+    const out={Hadir:0,Alpha:0,Izin:0,Sakit:0};
+    if(!Array.isArray(absensi)) absensi=[];
+    absensi.forEach(function(a){
+      const d=parseDateFromAbsen(a);
+      if(!d || bulanKey(d)!==key || !sameStudent(a)) return;
+      const st=getStatusAbsen(a);
+      if(out[st] !== undefined) out[st]++;
+    });
+    return out;
+  }
+  function ensureManualAbsenUI(){
+    const absenPage=byId('absenPage');
+    if(!absenPage || byId('manualAbsenCard')) return;
+    absenPage.insertAdjacentHTML('beforeend', `
+      <div class="manual-absen-card" id="manualAbsenCard">
+        <h3>Absen Manual</h3>
+        <p>Dipakai guru untuk input absen tanpa tap RFID. Pilih siswa, status, tanggal, dan jam absen.</p>
+        <div class="manual-absen-grid">
+          <div>
+            <label>Nama Siswa / BPH</label>
+            <select id="manualAbsenSiswa"></select>
+          </div>
+          <div>
+            <label>Status Absen</label>
+            <select id="manualAbsenStatus">
+              <option value="Hadir">Hadir</option>
+              <option value="Alpha">Alpha</option>
+              <option value="Izin">Izin</option>
+              <option value="Sakit">Sakit</option>
+            </select>
+          </div>
+          <div>
+            <label>Tanggal</label>
+            <input type="date" id="manualAbsenTanggal">
+          </div>
+          <div>
+            <label>Jam</label>
+            <input type="time" id="manualAbsenJam">
+          </div>
+        </div>
+        <div class="manual-absen-actions">
+          <button class="btn-blue" type="button" onclick="simpanAbsenManual()">Simpan Absen Manual</button>
+          <button class="btn-gray" type="button" onclick="resetAbsenManual()">Reset</button>
+        </div>
+      </div>
+    `);
+  }
+  function renderManualAbsenSelect(){
+    const select=byId('manualAbsenSiswa');
+    if(!select) return;
+    const list=(Array.isArray(siswa)?siswa:[]).filter(function(s){return (s.nama || s.fullName) && (s.rfid || s.rfidSiswa || s.loginRFID);});
+    if(!list.length){
+      select.innerHTML='<option value="">Belum ada Data Siswa/BPH</option>';
+      return;
+    }
+    select.innerHTML=list.map(function(s,idx){
+      const role=s.role ? ' - '+String(s.role).toUpperCase() : '';
+      return `<option value="${idx}">${esc(s.nama || s.fullName)}${role} | RFID: ${esc(s.rfid || s.rfidSiswa || s.loginRFID)}</option>`;
+    }).join('');
+  }
+  window.resetAbsenManual=function(){
+    if(byId('manualAbsenTanggal')) byId('manualAbsenTanggal').value=todayISO();
+    if(byId('manualAbsenJam')) byId('manualAbsenJam').value=nowTime();
+    if(byId('manualAbsenStatus')) byId('manualAbsenStatus').value='Hadir';
+  };
+  window.simpanAbsenManual=function(){
+    if(!currentUser || currentUser.role !== 'guru'){
+      showError('Absen manual hanya bisa diinput oleh guru');
+      return;
+    }
+    const select=byId('manualAbsenSiswa');
+    const idx=Number(select ? select.value : -1);
+    const data=(Array.isArray(siswa)?siswa:[])[idx];
+    const status=byId('manualAbsenStatus') ? byId('manualAbsenStatus').value : 'Hadir';
+    const tglISO=byId('manualAbsenTanggal') ? byId('manualAbsenTanggal').value : todayISO();
+    const jam=byId('manualAbsenJam') ? byId('manualAbsenJam').value : nowTime();
+    if(!data){showError('Pilih siswa/BPH terlebih dahulu');return;}
+    if(!tglISO){showError('Tanggal wajib diisi');return;}
+    if(!jam){showError('Jam wajib diisi');return;}
+    const d=new Date(tglISO+'T00:00:00');
+    const tanggalId=isNaN(d) ? tglISO : d.toLocaleDateString('id-ID');
+    const rfid=String(data.rfid || data.rfidSiswa || data.loginRFID || '').trim();
+    const nama=data.nama || data.fullName || '-';
+    if(!rfid){showError('Data ini belum punya RFID');return;}
+
+    const oldIndex=absensi.findIndex(function(a){
+      return String(a.rfid || '').trim() === rfid && (String(a.tanggalISO || '') === tglISO || String(a.tanggal || '') === tanggalId) && a.mode === 'Manual';
+    });
+    const row={
+      id: oldIndex>=0 ? absensi[oldIndex].id : Date.now(),
+      nama:nama,
+      rfid:rfid,
+      tanggal:tanggalId,
+      tanggalISO:tglISO,
+      jam:jam,
+      masuk: status === 'Hadir' ? jam : '',
+      pulang:'',
+      status:status,
+      mode:'Manual',
+      inputOleh: currentUser.fullName || currentUser.username || 'Guru',
+      waktuInput:new Date().toLocaleString('id-ID')
+    };
+    if(oldIndex>=0) absensi[oldIndex]=Object.assign({}, absensi[oldIndex], row);
+    else absensi.push(row);
+    saveAll();
+    updateDashboard();
+    renderChartDashboard();
+    renderDashboardMonthlyAttendance();
+    if(typeof renderData === 'function') renderData();
+    showSuccess('Absen manual berhasil disimpan: '+nama+' - '+status+' jam '+jam);
+  };
+  function ensureDashboardMonthlyUI(){
+    const percentCard=byId('persenAbsenDashboard') ? byId('persenAbsenDashboard').closest('.absen-percent-card') : null;
+    if(!percentCard || byId('monthlyAttendanceCard')) return;
+    percentCard.insertAdjacentHTML('afterend', `
+      <div class="monthly-attendance-card" id="monthlyAttendanceCard">
+        <div class="monthly-attendance-head">
+          <div><b>Rekap Absen Bulan Ini</b><br><span id="monthlyAttendanceSubtitle">-</span></div>
+          <span id="monthlyAttendanceUser">-</span>
+        </div>
+        <div class="monthly-attendance-grid">
+          <div class="monthly-attendance-item"><div class="num" id="monthlyHadir">0</div><div class="label">Hadir</div></div>
+          <div class="monthly-attendance-item"><div class="num" id="monthlyAlpha">0</div><div class="label">Alpha</div></div>
+          <div class="monthly-attendance-item"><div class="num" id="monthlyIzin">0</div><div class="label">Izin</div></div>
+          <div class="monthly-attendance-item"><div class="num" id="monthlySakit">0</div><div class="label">Sakit</div></div>
+        </div>
+      </div>
+    `);
+  }
+  window.renderDashboardMonthlyAttendance=function(){
+    ensureDashboardMonthlyUI();
+    const c=getMonthlyCounts();
+    const now=new Date();
+    const set=function(id,val){const el=byId(id); if(el) el.innerText=val;};
+    set('monthlyHadir',c.Hadir); set('monthlyAlpha',c.Alpha); set('monthlyIzin',c.Izin); set('monthlySakit',c.Sakit);
+    const sub=byId('monthlyAttendanceSubtitle'); if(sub) sub.innerText=bulanLabel(now);
+    const user=byId('monthlyAttendanceUser');
+    if(user) user.innerText=isMemberUser() ? (currentUser.fullName || currentUser.username || 'Siswa') : 'Semua siswa/BPH';
+  };
+
+  const oldShowPage=window.showPage;
+  window.showPage=function(id,btn){
+    if(typeof oldShowPage === 'function') oldShowPage(id,btn);
+    if(id === 'absenPage'){
+      ensureManualAbsenUI();
+      renderManualAbsenSelect();
+      resetAbsenManual();
+    }
+    if(id === 'dashboardPage'){
+      ensureDashboardMonthlyUI();
+      renderDashboardMonthlyAttendance();
+      renderChartDashboard();
+    }
+  };
+
+  const oldUpdateDashboard=window.updateDashboard;
+  window.updateDashboard=function(){
+    if(typeof oldUpdateDashboard === 'function') oldUpdateDashboard();
+    renderDashboardMonthlyAttendance();
+  };
+
+  window.renderChartDashboard=function(){
+    const ctxBar=byId('barChartPasprapati');
+    if(!ctxBar || typeof Chart === 'undefined') return;
+    if(barChartPasprapati) barChartPasprapati.destroy();
+    const c=getMonthlyCounts();
+    barChartPasprapati=new Chart(ctxBar,{type:'bar',data:{
+      labels:['Hadir','Alpha','Izin','Sakit'],
+      datasets:[{label:'Jumlah bulan ini',data:[c.Hadir,c.Alpha,c.Izin,c.Sakit],backgroundColor:['#22c55e','#ef4444','#f59e0b','#0ea5e9'],borderRadius:12,barThickness:34}]
+    },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#0f172a',padding:12,cornerRadius:12,callbacks:{label:function(context){return 'Jumlah: '+context.raw;}}}},scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:11},color:'#64748b'},grid:{color:'#e5e7eb'}},x:{ticks:{font:{size:12,weight:'bold'},color:'#334155'},grid:{display:false}}}}});
+
+    const hadirPercent=(typeof getPersentaseAbsenHariIni === 'function') ? getPersentaseAbsenHariIni() : 0;
+    const totalPengajuan=(Array.isArray(sakit)?sakit.length:0)+(Array.isArray(izin)?izin.length:0);
+    const totalDisetujui=[...(Array.isArray(sakit)?sakit:[]),...(Array.isArray(izin)?izin:[])].filter(function(x){return x.status === 'Disetujui';}).length;
+    const izinPercent=totalPengajuan ? Math.round((totalDisetujui/totalPengajuan)*100) : 0;
+    if(byId('donutHadirText')) byId('donutHadirText').innerText=hadirPercent+'%';
+    if(byId('donutIzinText')) byId('donutIzinText').innerText=izinPercent+'%';
+    if(byId('donutHadir3D')) byId('donutHadir3D').style.setProperty('--value',hadirPercent);
+    if(byId('donutIzin3D')) byId('donutIzin3D').style.setProperty('--value',izinPercent);
+  };
+
+  const oldRenderData=window.renderData;
+  window.renderData=function(){
+    if(typeof oldRenderData === 'function') oldRenderData();
+    const table=byId('tableAbsen');
+    if(table){
+      table.innerHTML=`
+        <table>
+          <tr><th>Nama</th><th>RFID</th><th>Tanggal</th><th>Jam</th><th>Masuk</th><th>Pulang</th><th>Status</th><th>Input</th></tr>
+          ${(Array.isArray(absensi)?absensi:[]).map(function(a){return `
+            <tr>
+              <td>${esc(a.nama)}</td>
+              <td>${esc(a.rfid)}</td>
+              <td>${esc(a.tanggal || a.tanggalISO)}</td>
+              <td>${esc(a.jam || a.masuk || '-')}</td>
+              <td>${esc(a.masuk || '-')}</td>
+              <td>${esc(a.pulang || '-')}</td>
+              <td>${esc(a.status || '-')}</td>
+              <td>${esc(a.mode || 'RFID')}</td>
+            </tr>`;}).join('')}
+        </table>`;
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded',function(){
+    ensureManualAbsenUI();
+    renderManualAbsenSelect();
+    resetAbsenManual();
+    ensureDashboardMonthlyUI();
+    renderDashboardMonthlyAttendance();
+  });
+  window.addEventListener('load',function(){
     setTimeout(function(){
-      document.body.classList.remove('auth-loading');
-      const overlay=byId('loadingOverlay');
-      if(overlay){
-        overlay.style.transition='opacity .45s ease';
-        overlay.style.opacity='0';
-        setTimeout(function(){ try{ overlay.remove(); }catch(e){} }, 500);
-      }
-    }, 900);
+      ensureManualAbsenUI(); renderManualAbsenSelect(); resetAbsenManual();
+      ensureDashboardMonthlyUI(); renderDashboardMonthlyAttendance(); renderChartDashboard();
+    },450);
   });
 })();
 </script>
