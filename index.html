@@ -1488,7 +1488,8 @@ body.auth-loading #appPage{
         <label>Sertifikat Terap</label><input type="file" id="sertTerap" accept="image/*,.pdf">
         <label>Sertifikat Kegiatan</label><input type="file" id="sertKegiatan" accept="image/*,.pdf">
         <label>Sertifikat Pramuka Garuda</label><input type="file" id="sertGaruda" accept="image/*,.pdf">
-        <button onclick="simpanSiswa()">Simpan Data Siswa</button>
+        <button onclick="simpanSiswa()" id="btnSimpanSiswa">Simpan Data Siswa</button>
+        <button class="btn-batal-edit-siswa hidden" id="btnBatalEditSiswa" onclick="batalEditSiswa()">Batal Edit</button>
         <h3>Data Siswa Terdaftar</h3>
 <div id="listDataSiswa"></div>
       </div>
@@ -2145,6 +2146,229 @@ async function hapusRegistrasi(index){
   }catch(err){
     console.error(err);
     showError ? showError("Gagal hapus registrasi.") : alert("Gagal hapus registrasi.");
+  }
+}
+
+
+/* ================= PATCH FINAL EDIT HAPUS DATA SISWA ================= */
+function fileToBase64Siswa(fileInputId, oldValue){
+  return new Promise((resolve)=>{
+    const input = document.getElementById(fileInputId);
+    const file = input && input.files ? input.files[0] : null;
+    if(!file){
+      resolve(oldValue || "");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = () => resolve(oldValue || "");
+    reader.readAsDataURL(file);
+  });
+}
+
+function getSiswaNama(s){ return s.nama || s.fullName || s.namaSiswa || "-"; }
+function getSiswaJabatan(s){ return s.jabatan || s.jabatanSiswa || "-"; }
+function getSiswaTingkatan(s){ return s.tingkatan || s.tingkat || "-"; }
+function getSiswaRFID(s){ return s.rfid || s.loginRFID || s.uid || "-"; }
+
+function renderListSiswa(){
+  const box = document.getElementById("listDataSiswa");
+  if(!box) return;
+
+  if(!Array.isArray(siswa)) siswa = [];
+
+  if(siswa.length === 0){
+    box.innerHTML = `<div class="empty-status">Belum ada data siswa.</div>`;
+    return;
+  }
+
+  const rows = siswa.map((s, i)=>`
+    <tr>
+      <td>${getSiswaNama(s)}</td>
+      <td>${getSiswaJabatan(s)}</td>
+      <td>${getSiswaTingkatan(s)}</td>
+      <td>${getSiswaRFID(s)}</td>
+      <td>
+        <button type="button" class="btn-edit-siswa" onclick="editSiswa(${i})">Edit</button>
+        <button type="button" class="btn-hapus-siswa" onclick="hapusSiswa(${i})">Hapus</button>
+      </td>
+    </tr>
+  `).join("");
+
+  box.innerHTML = `
+    <div style="overflow:auto;">
+      <table>
+        <tr>
+          <th>Nama</th>
+          <th>Jabatan</th>
+          <th>Tingkatan</th>
+          <th>RFID</th>
+          <th>Aksi</th>
+        </tr>
+        ${rows}
+      </table>
+    </div>
+  `;
+}
+
+async function simpanSiswa(){
+  try{
+    if(typeof ensureCloudLoaded === "function") await ensureCloudLoaded();
+
+    if(!Array.isArray(siswa)) siswa = [];
+
+    const editIdEl = document.getElementById("editSiswaId");
+    const editIndex = editIdEl && editIdEl.value !== "" ? Number(editIdEl.value) : -1;
+
+    const nama = document.getElementById("namaSiswa")?.value.trim();
+    const jabatan = document.getElementById("jabatanSiswa")?.value.trim();
+    const tingkatan = document.getElementById("tingkatanSiswa")?.value;
+    const rfid = document.getElementById("rfidSiswa")?.value.trim();
+
+    if(!nama || !jabatan || !tingkatan || !rfid){
+      if(typeof showError === "function") showError("Nama, jabatan, tingkatan, dan RFID wajib diisi.");
+      else alert("Nama, jabatan, tingkatan, dan RFID wajib diisi.");
+      return;
+    }
+
+    const old = editIndex >= 0 && siswa[editIndex] ? siswa[editIndex] : {};
+
+    const data = {
+      ...old,
+      nama,
+      jabatan,
+      tingkatan,
+      rfid,
+      foto: await fileToBase64Siswa("fotoSiswa", old.foto),
+      sertRamu: await fileToBase64Siswa("sertRamu", old.sertRamu),
+      sertRakit: await fileToBase64Siswa("sertRakit", old.sertRakit),
+      sertTerap: await fileToBase64Siswa("sertTerap", old.sertTerap),
+      sertKegiatan: await fileToBase64Siswa("sertKegiatan", old.sertKegiatan),
+      sertGaruda: await fileToBase64Siswa("sertGaruda", old.sertGaruda),
+      updatedAt: new Date().toLocaleString("id-ID")
+    };
+
+    if(editIndex >= 0){
+      siswa[editIndex] = data;
+    }else{
+      const duplicate = siswa.some(s => String(getSiswaRFID(s)).trim() === rfid);
+      if(duplicate){
+        if(typeof showError === "function") showError("RFID sudah terdaftar di data siswa.");
+        else alert("RFID sudah terdaftar di data siswa.");
+        return;
+      }
+      data.createdAt = new Date().toLocaleString("id-ID");
+      siswa.push(data);
+    }
+
+    if(typeof saveAll === "function") saveAll();
+    if(typeof saveLocalOnly === "function") saveLocalOnly();
+    if(typeof saveCloudData === "function") await saveCloudData();
+
+    batalEditSiswa(false);
+    renderListSiswa();
+    if(typeof renderData === "function") renderData();
+    if(typeof updateDashboard === "function") updateDashboard();
+    if(typeof renderNilaiSelectSiswa === "function") renderNilaiSelectSiswa();
+
+    if(typeof showSuccess === "function") showSuccess(editIndex >= 0 ? "Data siswa berhasil diperbarui." : "Data siswa berhasil disimpan.");
+    else alert(editIndex >= 0 ? "Data siswa berhasil diperbarui." : "Data siswa berhasil disimpan.");
+
+  }catch(err){
+    console.error("Gagal simpan siswa:", err);
+    if(typeof showError === "function") showError("Gagal menyimpan data siswa.");
+    else alert("Gagal menyimpan data siswa.");
+  }
+}
+
+function editSiswa(index){
+  if(!Array.isArray(siswa) || !siswa[index]){
+    if(typeof showError === "function") showError("Data siswa tidak ditemukan.");
+    else alert("Data siswa tidak ditemukan.");
+    return;
+  }
+
+  const s = siswa[index];
+
+  document.getElementById("editSiswaId").value = index;
+  document.getElementById("namaSiswa").value = getSiswaNama(s) === "-" ? "" : getSiswaNama(s);
+  document.getElementById("jabatanSiswa").value = getSiswaJabatan(s) === "-" ? "" : getSiswaJabatan(s);
+  document.getElementById("tingkatanSiswa").value = getSiswaTingkatan(s) === "-" ? "" : getSiswaTingkatan(s);
+  document.getElementById("rfidSiswa").value = getSiswaRFID(s) === "-" ? "" : getSiswaRFID(s);
+
+  const btnSimpan = document.getElementById("btnSimpanSiswa");
+  const btnBatal = document.getElementById("btnBatalEditSiswa");
+  if(btnSimpan) btnSimpan.innerText = "Simpan Perubahan";
+  if(btnBatal) btnBatal.classList.remove("hidden");
+
+  if(typeof showPage === "function") showPage("siswaPage");
+
+  const page = document.getElementById("siswaPage");
+  if(page) page.scrollIntoView({behavior:"smooth", block:"start"});
+
+  if(typeof showSuccess === "function") showSuccess("Mode edit data siswa aktif.");
+}
+
+function batalEditSiswa(showMsg=true){
+  const editId = document.getElementById("editSiswaId");
+  if(editId) editId.value = "";
+
+  ["namaSiswa","jabatanSiswa","rfidSiswa"].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.value = "";
+  });
+
+  const tingkatan = document.getElementById("tingkatanSiswa");
+  if(tingkatan) tingkatan.value = "";
+
+  ["fotoSiswa","sertRamu","sertRakit","sertTerap","sertKegiatan","sertGaruda"].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.value = "";
+  });
+
+  const btnSimpan = document.getElementById("btnSimpanSiswa");
+  const btnBatal = document.getElementById("btnBatalEditSiswa");
+  if(btnSimpan) btnSimpan.innerText = "Simpan Data Siswa";
+  if(btnBatal) btnBatal.classList.add("hidden");
+
+  if(showMsg && typeof showSuccess === "function") showSuccess("Edit data siswa dibatalkan.");
+}
+
+async function hapusSiswa(index){
+  try{
+    if(typeof ensureCloudLoaded === "function") await ensureCloudLoaded();
+
+    if(!Array.isArray(siswa) || !siswa[index]){
+      if(typeof showError === "function") showError("Data siswa tidak ditemukan.");
+      else alert("Data siswa tidak ditemukan.");
+      return;
+    }
+
+    const s = siswa[index];
+    const nama = getSiswaNama(s);
+    const rfid = getSiswaRFID(s);
+
+    if(!confirm(`Hapus data siswa ini?\n\nNama: ${nama}\nRFID: ${rfid}`)) return;
+
+    siswa.splice(index, 1);
+
+    if(typeof saveAll === "function") saveAll();
+    if(typeof saveLocalOnly === "function") saveLocalOnly();
+    if(typeof saveCloudData === "function") await saveCloudData();
+
+    batalEditSiswa(false);
+    renderListSiswa();
+    if(typeof renderData === "function") renderData();
+    if(typeof updateDashboard === "function") updateDashboard();
+    if(typeof renderNilaiSelectSiswa === "function") renderNilaiSelectSiswa();
+
+    if(typeof showSuccess === "function") showSuccess("Data siswa berhasil dihapus.");
+    else alert("Data siswa berhasil dihapus.");
+
+  }catch(err){
+    console.error("Gagal hapus siswa:", err);
+    if(typeof showError === "function") showError("Gagal menghapus data siswa.");
+    else alert("Gagal menghapus data siswa.");
   }
 }
 
