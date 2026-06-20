@@ -1145,6 +1145,43 @@ body.auth-loading #appPage{
   display:none!important;
 }
 
+
+/* VIDEO BERITA */
+.video-upload-note{
+  margin:-6px 0 12px;
+  color:#64748b;
+  font-size:12px;
+  line-height:1.45;
+}
+.berita-video{
+  width:100%;
+  max-height:460px;
+  object-fit:cover;
+  display:block;
+  background:#020617;
+  border-radius:20px;
+}
+.berita-media-wrap{
+  background:#020617;
+  border-radius:22px 22px 0 0;
+  overflow:hidden;
+}
+.berita-media-wrap video{
+  border-radius:0;
+}
+.video-label-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:#fee2e2;
+  color:#b91c1c;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:900;
+  margin-bottom:10px;
+}
+
 </style>
 </head>
 
@@ -1596,6 +1633,10 @@ body.auth-loading #appPage{
           <label>Upload Foto Berita</label>
           <input type="file" id="fotoBerita" accept="image/*">
 
+          <label>Upload Video Berita</label>
+          <input type="file" id="videoBerita" accept="video/mp4,video/webm,video/quicktime">
+          <p class="video-upload-note">Video disarankan MP4/WebM resolusi 720p atau 1080p agar ringan diputar. Maksimal 50 MB.</p>
+
           <textarea id="artikelBerita" placeholder="Tulis artikel berita..."></textarea>
 
           <button class="btn-blue" onclick="uploadBerita()">Simpan Berita</button>
@@ -1663,6 +1704,10 @@ body.auth-loading #appPage{
 
           <label>Upload Foto Berita</label>
           <input type="file" id="fotoBerita" accept="image/*">
+
+          <label>Upload Video Berita</label>
+          <input type="file" id="videoBerita" accept="video/mp4,video/webm,video/quicktime">
+          <p class="video-upload-note">Video disarankan MP4/WebM resolusi 720p atau 1080p agar ringan diputar. Maksimal 50 MB.</p>
 
           <textarea id="artikelBerita" placeholder="Tulis artikel berita..."></textarea>
 
@@ -2444,11 +2489,11 @@ function showPage(id,btn){
   }
 }
 
-function fileToBase64(input){
+function fileToBase64(input, maxMB = 10, customError = ""){
   return new Promise((resolve,reject)=>{
+    if(!input || !input.files || !input.files[0]){resolve("");return}
     const file=input.files[0];
-    if(!file){resolve("");return}
-    if(file.size>10*1024*1024){reject("Ukuran file maksimal 10 MB");return}
+    if(file.size>maxMB*1024*1024){reject(customError || `Ukuran file maksimal ${maxMB} MB`);return}
 
     const reader=new FileReader();
     reader.onload=()=>resolve(reader.result);
@@ -4056,6 +4101,25 @@ function bolehUploadBerita(){
   return currentUser && (currentUser.role === "guru" || currentUser.role === "bph");
 }
 
+function renderBeritaMedia(item){
+  if(item && item.video){
+    return `
+      <div class="berita-media-wrap">
+        <video class="berita-video" controls preload="metadata" playsinline>
+          <source src="${item.video}">
+          Browser tidak mendukung pemutar video.
+        </video>
+      </div>
+    `;
+  }
+
+  if(item && item.foto){
+    return `<img src="${item.foto}">`;
+  }
+
+  return "";
+}
+
 function renderDashboardBerita(){
   const box = document.getElementById("dashboardBerita");
   if(!box) return;
@@ -4069,10 +4133,11 @@ function renderDashboardBerita(){
 
   box.innerHTML = data.map(item=>`
     <div class="berita-card">
-      ${item.foto ? `<img src="${item.foto}">` : ""}
+      ${renderBeritaMedia(item)}
       <div class="berita-content">
         <h2>${item.judul || "-"}</h2>
         <div class="berita-meta">${item.penulis || "-"} • ${item.tanggal || "-"}</div>
+        ${item.video ? `<div class="video-label-chip">🎥 Video Berita</div>` : ""}
         <div class="berita-artikel">${item.artikel || "-"}</div>
       </div>
     </div>
@@ -4096,10 +4161,11 @@ function renderKelolaBerita(){
 
   box.innerHTML = beritaPramuka.map(item=>`
     <div class="berita-card">
-      ${item.foto ? `<img src="${item.foto}">` : ""}
+      ${renderBeritaMedia(item)}
       <div class="berita-content">
         <h2>${item.judul || "-"}</h2>
         <div class="berita-meta">${item.penulis || "-"} • ${item.tanggal || "-"}</div>
+        ${item.video ? `<div class="video-label-chip">🎥 Video Berita</div>` : ""}
         <div class="berita-artikel">${item.artikel || "-"}</div>
 
         <div class="berita-actions">
@@ -4127,6 +4193,7 @@ async function uploadBerita(){
     const judul = document.getElementById("judulBerita").value.trim();
     const artikel = document.getElementById("artikelBerita").value.trim();
     const foto = await fileToBase64(document.getElementById("fotoBerita"));
+    const video = await fileToBase64(document.getElementById("videoBerita"), 50, "Ukuran video maksimal 50 MB");
 
     if(!judul || !artikel){
       showError("Judul dan artikel wajib diisi");
@@ -4141,6 +4208,7 @@ async function uploadBerita(){
           judul,
           artikel,
           foto: foto || beritaPramuka[idx].foto || "",
+          video: video || beritaPramuka[idx].video || "",
           editor: currentUser.fullName || currentUser.username,
           tanggalEdit: new Date().toLocaleString("id-ID")
         };
@@ -4152,6 +4220,7 @@ async function uploadBerita(){
         judul,
         artikel,
         foto,
+        video,
         penulis:currentUser.fullName || currentUser.username,
         rolePenulis:currentUser.role,
         tanggal:new Date().toLocaleString("id-ID")
@@ -4184,6 +4253,8 @@ function editBerita(id){
   document.getElementById("judulBerita").value = item.judul || "";
   document.getElementById("artikelBerita").value = item.artikel || "";
   document.getElementById("fotoBerita").value = "";
+  const videoInput = document.getElementById("videoBerita");
+  if(videoInput) videoInput.value = "";
 
   document.getElementById("kelolaBeritaPage").scrollIntoView({behavior:"smooth"});
   showSuccess("Mode edit berita aktif");
@@ -4209,11 +4280,13 @@ function batalEditBerita(){
   const judul = document.getElementById("judulBerita");
   const artikel = document.getElementById("artikelBerita");
   const foto = document.getElementById("fotoBerita");
+  const video = document.getElementById("videoBerita");
 
   if(edit) edit.value = "";
   if(judul) judul.value = "";
   if(artikel) artikel.value = "";
   if(foto) foto.value = "";
+  if(video) video.value = "";
 }
 
 function backupData(){
