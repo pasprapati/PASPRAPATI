@@ -2000,6 +2000,154 @@ async function hapusRegistrasi(index){
   }
 }
 
+
+/* ================= PATCH FINAL HAPUS REGISTRASI ================= */
+function renderRegisterHistoryPreview(){
+  const box = document.getElementById("registerHistoryPreview");
+  if(!box) return;
+
+  if(!Array.isArray(historiRegistrasi)) historiRegistrasi = [];
+
+  if(historiRegistrasi.length === 0){
+    box.innerHTML = "Belum ada riwayat registrasi.";
+    return;
+  }
+
+  box.innerHTML = `
+    <div style="overflow:auto;">
+      <table class="reg-history-table">
+        <tr>
+          <th>Username</th>
+          <th>Nama</th>
+          <th>Role</th>
+          <th>RFID</th>
+          <th>Tanggal</th>
+          <th>Aksi</th>
+        </tr>
+        ${historiRegistrasi.slice().reverse().map((h, i)=>{
+          const realIndex = historiRegistrasi.length - 1 - i;
+          return `
+            <tr>
+              <td>${h.username || "-"}</td>
+              <td>${h.fullName || h.nama || "-"}</td>
+              <td>${h.role || "-"}</td>
+              <td>${h.loginRFID || h.rfid || "-"}</td>
+              <td>${h.tanggal || h.waktu || h.createdAt || "-"}</td>
+              <td>
+                <button type="button" class="btn-reg-delete" onclick="hapusRegistrasi(${realIndex})">
+                  Hapus
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join("")}
+      </table>
+    </div>
+  `;
+}
+
+function renderHistoriRegistrasi(){
+  const box = document.getElementById("tableHistoriRegistrasi");
+  if(!box) return;
+
+  if(!Array.isArray(historiRegistrasi)) historiRegistrasi = [];
+
+  if(historiRegistrasi.length === 0){
+    box.innerHTML = `<div class="empty-status">Belum ada histori registrasi.</div>`;
+    return;
+  }
+
+  box.innerHTML = `
+    <div style="overflow:auto;">
+      <table class="reg-history-table">
+        <tr>
+          <th>Username</th>
+          <th>Nama</th>
+          <th>Role</th>
+          <th>RFID</th>
+          <th>Tanggal</th>
+          <th>Aksi</th>
+        </tr>
+        ${historiRegistrasi.slice().reverse().map((h, i)=>{
+          const realIndex = historiRegistrasi.length - 1 - i;
+          return `
+            <tr>
+              <td>${h.username || "-"}</td>
+              <td>${h.fullName || h.nama || "-"}</td>
+              <td>${h.role || "-"}</td>
+              <td>${h.loginRFID || h.rfid || "-"}</td>
+              <td>${h.tanggal || h.waktu || h.createdAt || "-"}</td>
+              <td>
+                <button type="button" class="btn-reg-delete" onclick="hapusRegistrasi(${realIndex})">
+                  Hapus
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join("")}
+      </table>
+    </div>
+  `;
+}
+
+async function hapusRegistrasi(index){
+  try{
+    if(typeof ensureCloudLoaded === "function") await ensureCloudLoaded();
+
+    if(!Array.isArray(historiRegistrasi)) historiRegistrasi = [];
+    index = Number(index);
+
+    if(index < 0 || index >= historiRegistrasi.length){
+      showError ? showError("Data registrasi tidak ditemukan.") : alert("Data registrasi tidak ditemukan.");
+      return;
+    }
+
+    const data = historiRegistrasi[index];
+    const username = String(data.username || "").trim();
+    const nama = String(data.fullName || data.nama || "").trim();
+    const rfid = String(data.loginRFID || data.rfid || "").trim();
+
+    if(!confirm(`Hapus registrasi ${nama || username || "-"}?`)) return;
+
+    historiRegistrasi.splice(index, 1);
+
+    if(username && Array.isArray(users)){
+      users = users.filter(u => String(u.username || "").trim() !== username);
+    }
+
+    if(Array.isArray(siswa)){
+      siswa = siswa.filter(s => {
+        const sNama = String(s.nama || s.fullName || "").trim().toLowerCase();
+        const sUser = String(s.username || "").trim();
+        const sRFID = String(s.rfid || s.loginRFID || "").trim();
+
+        if(username && sUser === username) return false;
+        if(nama && sNama === nama.toLowerCase()) return false;
+        if(rfid && sRFID === rfid) return false;
+        return true;
+      });
+    }
+
+    if(typeof saveUsers === "function") saveUsers();
+    if(typeof saveAll === "function") saveAll();
+    if(typeof saveLocalOnly === "function") saveLocalOnly();
+    if(typeof saveCloudData === "function") await saveCloudData();
+
+    renderRegisterHistoryPreview();
+    renderHistoriRegistrasi();
+
+    if(typeof renderListSiswa === "function") renderListSiswa();
+    if(typeof renderData === "function") renderData();
+    if(typeof updateDashboard === "function") updateDashboard();
+
+    showSuccess ? showSuccess("Data registrasi berhasil dihapus.") : alert("Data registrasi berhasil dihapus.");
+
+  }catch(err){
+    console.error(err);
+    showError ? showError("Gagal hapus registrasi.") : alert("Gagal hapus registrasi.");
+  }
+}
+
 </script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 
