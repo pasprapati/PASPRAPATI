@@ -4101,12 +4101,106 @@ function bolehUploadBerita(){
   return currentUser && (currentUser.role === "guru" || currentUser.role === "bph");
 }
 
+/* ================= VIDEO BERITA ANTI HILANG =================
+   Video tidak disimpan ke Firestore/localStorage sebagai Base64,
+   tapi disimpan ke IndexedDB browser supaya tidak langsung hilang
+   dan tidak bikin localStorage penuh. */
+const PASPRAPATI_VIDEO_DB = "pasprapati_berita_video_db";
+const PASPRAPATI_VIDEO_STORE = "videos";
+const beritaVideoURLCache = {};
+
+function openBeritaVideoDB(){
+  return new Promise((resolve,reject)=>{
+    const request = indexedDB.open(PASPRAPATI_VIDEO_DB, 1);
+    request.onupgradeneeded = () => {
+      const dbVideo = request.result;
+      if(!dbVideo.objectStoreNames.contains(PASPRAPATI_VIDEO_STORE)){
+        dbVideo.createObjectStore(PASPRAPATI_VIDEO_STORE);
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject("Gagal membuka penyimpanan video browser");
+  });
+}
+
+async function simpanVideoBeritaDB(key, file){
+  const dbVideo = await openBeritaVideoDB();
+  return new Promise((resolve,reject)=>{
+    const tx = dbVideo.transaction(PASPRAPATI_VIDEO_STORE, "readwrite");
+    tx.objectStore(PASPRAPATI_VIDEO_STORE).put(file, key);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject("Gagal menyimpan video. Coba pakai video lebih kecil.");
+  });
+}
+
+async function ambilVideoBeritaDB(key){
+  const dbVideo = await openBeritaVideoDB();
+  return new Promise((resolve,reject)=>{
+    const tx = dbVideo.transaction(PASPRAPATI_VIDEO_STORE, "readonly");
+    const req = tx.objectStore(PASPRAPATI_VIDEO_STORE).get(key);
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => reject("Gagal membaca video berita");
+  });
+}
+
+async function hapusVideoBeritaDB(key){
+  if(!key) return;
+  try{
+    const dbVideo = await openBeritaVideoDB();
+    await new Promise((resolve)=>{
+      const tx = dbVideo.transaction(PASPRAPATI_VIDEO_STORE, "readwrite");
+      tx.objectStore(PASPRAPATI_VIDEO_STORE).delete(key);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => resolve(false);
+    });
+    if(beritaVideoURLCache[key]){
+      URL.revokeObjectURL(beritaVideoURLCache[key]);
+      delete beritaVideoURLCache[key];
+    }
+  }catch(e){}
+}
+
+async function refreshBeritaVideos(){
+  const videos = document.querySelectorAll("video[data-video-key]");
+  for(const video of videos){
+    const key = video.dataset.videoKey;
+    if(!key) continue;
+
+    if(beritaVideoURLCache[key]){
+      video.src = beritaVideoURLCache[key];
+      continue;
+    }
+
+    const blob = await ambilVideoBeritaDB(key);
+    if(blob){
+      const url = URL.createObjectURL(blob);
+      beritaVideoURLCache[key] = url;
+      video.src = url;
+      video.load();
+    }else{
+      const fallback = video.closest(".berita-media-wrap");
+      if(fallback){
+        fallback.innerHTML = `<div class="empty-status">Video belum tersedia di perangkat ini.</div>`;
+      }
+    }
+  }
+}
+
 function renderBeritaMedia(item){
+  if(item && item.videoKey){
+    return `
+      <div class="berita-media-wrap">
+        <video class="berita-video" controls preload="metadata" playsinline data-video-key="${item.videoKey}">
+          Browser tidak mendukung pemutar video.
+        </video>
+      </div>
+    `;
+  }
+
   if(item && item.video){
     return `
       <div class="berita-media-wrap">
-        <video class="berita-video" controls preload="metadata" playsinline>
-          <source src="${item.video}">
+        <video class="berita-video" controls preload="metadata" playsinline src="${item.video}">
           Browser tidak mendukung pemutar video.
         </video>
       </div>
@@ -4137,11 +4231,13 @@ function renderDashboardBerita(){
       <div class="berita-content">
         <h2>${item.judul || "-"}</h2>
         <div class="berita-meta">${item.penulis || "-"} • ${item.tanggal || "-"}</div>
-        ${item.video ? `<div class="video-label-chip">🎥 Video Berita</div>` : ""}
+        ${(item.videoKey || item.video) ? `<div class="video-label-chip">🎥 Video Berita</div>` : ""}
         <div class="berita-artikel">${item.artikel || "-"}</div>
       </div>
     </div>
   `).join("");
+
+  refreshBeritaVideos();
 }
 
 function renderKelolaBerita(){
@@ -4165,7 +4261,7 @@ function renderKelolaBerita(){
       <div class="berita-content">
         <h2>${item.judul || "-"}</h2>
         <div class="berita-meta">${item.penulis || "-"} • ${item.tanggal || "-"}</div>
-        ${item.video ? `<div class="video-label-chip">🎥 Video Berita</div>` : ""}
+        ${(item.videoKey || item.video) ? `<div class="video-label-chip">🎥 Video Berita</div>` : ""}
         <div class="berita-artikel">${item.artikel || "-"}</div>
 
         <div class="berita-actions">
@@ -4175,6 +4271,8 @@ function renderKelolaBerita(){
       </div>
     </div>
   `).join("");
+
+  refreshBeritaVideos();
 }
 
 function renderBerita(){
@@ -4193,34 +4291,84 @@ async function uploadBerita(){
     const judul = document.getElementById("judulBerita").value.trim();
     const artikel = document.getElementById("artikelBerita").value.trim();
     const foto = await fileToBase64(document.getElementById("fotoBerita"));
-    const video = await fileToBase64(document.getElementById("videoBerita"), 50, "Ukuran video maksimal 50 MB");
+    const videoInput = document.getElementById("videoBerita");
+    const videoFile = videoInput && videoInput.files ? videoInput.files[0] : null;
 
     if(!judul || !artikel){
       showError("Judul dan artikel wajib diisi");
       return;
     }
 
+    if(videoFile){
+      const maxVideo = 50 * 1024 * 1024;
+      if(videoFile.size > maxVideo){
+        showError("Ukuran video maksimal 50 MB");
+        return;
+      }
+
+      const allowed = ["video/mp4", "video/webm", "video/quicktime"];
+      if(videoFile.type && !allowed.includes(videoFile.type)){
+        showError("Format video harus MP4, WebM, atau MOV");
+        return;
+      }
+    }
+
     if(editId){
       const idx = beritaPramuka.findIndex(b => String(b.id) === String(editId));
       if(idx >= 0){
+        let videoKey = beritaPramuka[idx].videoKey || "berita_video_" + editId;
+        let videoName = beritaPramuka[idx].videoName || "";
+        let videoSize = beritaPramuka[idx].videoSize || 0;
+        let videoType = beritaPramuka[idx].videoType || "";
+
+        if(videoFile){
+          videoKey = "berita_video_" + editId;
+          await simpanVideoBeritaDB(videoKey, videoFile);
+          videoName = videoFile.name;
+          videoSize = videoFile.size;
+          videoType = videoFile.type;
+        }
+
         beritaPramuka[idx] = {
           ...beritaPramuka[idx],
           judul,
           artikel,
           foto: foto || beritaPramuka[idx].foto || "",
-          video: video || beritaPramuka[idx].video || "",
+          video: "",
+          videoKey: videoFile ? videoKey : (beritaPramuka[idx].videoKey || ""),
+          videoName,
+          videoSize,
+          videoType,
           editor: currentUser.fullName || currentUser.username,
           tanggalEdit: new Date().toLocaleString("id-ID")
         };
       }
       showSuccess("Berita berhasil diedit");
     }else{
+      const id = Date.now();
+      let videoKey = "";
+      let videoName = "";
+      let videoSize = 0;
+      let videoType = "";
+
+      if(videoFile){
+        videoKey = "berita_video_" + id;
+        await simpanVideoBeritaDB(videoKey, videoFile);
+        videoName = videoFile.name;
+        videoSize = videoFile.size;
+        videoType = videoFile.type;
+      }
+
       beritaPramuka.unshift({
-        id:Date.now(),
+        id,
         judul,
         artikel,
         foto,
-        video,
+        video:"",
+        videoKey,
+        videoName,
+        videoSize,
+        videoType,
         penulis:currentUser.fullName || currentUser.username,
         rolePenulis:currentUser.role,
         tanggal:new Date().toLocaleString("id-ID")
@@ -4260,13 +4408,18 @@ function editBerita(id){
   showSuccess("Mode edit berita aktif");
 }
 
-function hapusBerita(id){
+async function hapusBerita(id){
   if(!bolehUploadBerita()){
     showError("Hanya Guru atau BPH yang bisa hapus berita");
     return;
   }
 
   if(!confirm("Yakin mau hapus berita ini?")) return;
+
+  const item = beritaPramuka.find(b => b.id === id);
+  if(item && item.videoKey){
+    await hapusVideoBeritaDB(item.videoKey);
+  }
 
   beritaPramuka = beritaPramuka.filter(b => b.id !== id);
   saveAll();
