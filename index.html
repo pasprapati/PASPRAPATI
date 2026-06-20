@@ -1310,7 +1310,11 @@ body:not(.auth-loading) #loadingOverlay{display:none!important;}
       <option value="bph">BPH</option>
     </select>
     <input type="text" id="regLoginRFID" placeholder="UID RFID siswa untuk absen">
-    <p style="margin:-6px 0 12px;color:#64748b;font-size:12px;line-height:1.45;">Catatan: RFID wajib untuk siswa. Guru/BPH boleh kosong dan tetap bisa login manual pakai username & password.</p>
+    <div id="regFotoSiswaWrap">
+      <label>Upload Foto Siswa</label>
+      <input type="file" id="regFotoSiswa" accept="image/*">
+    </div>
+    <p style="margin:-6px 0 12px;color:#64748b;font-size:12px;line-height:1.45;">Catatan: RFID wajib untuk siswa. Guru/BPH boleh kosong dan tetap bisa login manual pakai username & password. Foto hanya muncul untuk role siswa dan otomatis masuk ke Data Siswa.</p>
     <button onclick="registerUser()">Daftar</button>
     <button class="btn-red" onclick="showLogin()">Kembali</button>
 
@@ -5517,5 +5521,158 @@ window.addEventListener("load", async()=>{
   });
 })();
 </script>
+
+
+<script id="pasprapati-registrasi-foto-datasiswa-patch">
+/* ================= PATCH: REGISTRASI SISWA OTOMATIS MASUK DATA SISWA + FOTO ================= */
+(function(){
+  function safeText(v){return String(v || '').trim();}
+  function fileToBase64ById(id){
+    return new Promise(function(resolve){
+      const input = document.getElementById(id);
+      const file = input && input.files ? input.files[0] : null;
+      if(!file) return resolve('');
+      const reader = new FileReader();
+      reader.onload = function(e){ resolve(e.target.result || ''); };
+      reader.onerror = function(){ resolve(''); };
+      reader.readAsDataURL(file);
+    });
+  }
+  function savePatchData(){
+    try{ localStorage.setItem('pasprapati_users', JSON.stringify(users)); }catch(e){}
+    try{ localStorage.setItem('pasprapati_siswa', JSON.stringify(siswa)); }catch(e){}
+    try{ localStorage.setItem('pasprapati_histori_registrasi', JSON.stringify(historiRegistrasi)); }catch(e){}
+    try{ if(typeof saveUsers === 'function') saveUsers(); }catch(e){}
+    try{ if(typeof saveAll === 'function') saveAll(); }catch(e){}
+    try{ if(typeof saveCloudData === 'function') saveCloudData(); }catch(e){}
+  }
+  function refreshPatchViews(){
+    try{ renderRegisterHistoryPreview(); }catch(e){}
+    try{ renderHistoriRegistrasi(); }catch(e){}
+    try{ renderListSiswa(); }catch(e){}
+    try{ renderData(); }catch(e){}
+    try{ updateDashboard(); }catch(e){}
+    try{ renderChartDashboard(); }catch(e){}
+  }
+
+  window.updateRegisterRFIDPlaceholder = function(){
+    const role = document.getElementById('regRole')?.value || 'siswa';
+    const input = document.getElementById('regLoginRFID');
+    const fotoWrap = document.getElementById('regFotoSiswaWrap');
+    if(input){
+      input.placeholder = role === 'siswa' ? 'UID RFID siswa untuk absen' : 'UID RFID login Guru/BPH (opsional, bisa login manual)';
+    }
+    if(fotoWrap){
+      fotoWrap.style.display = role === 'siswa' ? 'block' : 'none';
+      if(role !== 'siswa'){
+        const fotoInput = document.getElementById('regFotoSiswa');
+        if(fotoInput) fotoInput.value = '';
+      }
+    }
+  };
+
+  window.registerUser = async function(){
+    try{ if(typeof ensureCloudLoaded === 'function') await ensureCloudLoaded(); }catch(e){}
+
+    const username = safeText(document.getElementById('regUser')?.value);
+    const fullName = safeText(document.getElementById('regFullName')?.value);
+    const password = safeText(document.getElementById('regPass')?.value);
+    const role = document.getElementById('regRole')?.value || 'siswa';
+    const inputRFID = safeText(document.getElementById('regLoginRFID')?.value);
+    const fotoSiswaReg = role === 'siswa' ? await fileToBase64ById('regFotoSiswa') : '';
+
+    if(!username || !fullName || !password){
+      alert('Username, nama lengkap, dan password wajib diisi');
+      return;
+    }
+    if(role === 'siswa' && !inputRFID){
+      alert('UID RFID siswa wajib diisi untuk absen');
+      return;
+    }
+    if(Array.isArray(users) && users.some(function(u){ return String(u.username || '').trim() === username; })){
+      alert('Username sudah terdaftar');
+      return;
+    }
+    if(inputRFID){
+      const rfidDipakaiUser = Array.isArray(users) && users.some(function(u){
+        return String(u.loginRFID || '').trim() === inputRFID || String(u.rfidSiswa || '').trim() === inputRFID;
+      });
+      const rfidDipakaiSiswa = Array.isArray(siswa) && siswa.some(function(s){
+        return String(s.rfid || s.loginRFID || s.rfidSiswa || '').trim() === inputRFID;
+      });
+      if(rfidDipakaiUser || rfidDipakaiSiswa){
+        alert('RFID sudah terdaftar');
+        return;
+      }
+    }
+
+    const tanggalRegistrasi = new Date().toLocaleString('id-ID');
+    const idBaru = Date.now();
+
+    users.push({
+      id: idBaru,
+      username: username,
+      fullName: fullName,
+      password: password,
+      role: role,
+      loginRFID: (role === 'guru' || role === 'bph') ? inputRFID : '',
+      rfidSiswa: role === 'siswa' ? inputRFID : '',
+      foto: fotoSiswaReg,
+      tanggalRegistrasi: tanggalRegistrasi
+    });
+
+    if(role === 'siswa'){
+      const dataSiswa = {
+        id: idBaru,
+        username: username,
+        nama: fullName,
+        fullName: fullName,
+        jabatan: 'Anggota',
+        tingkatan: '-',
+        rfid: inputRFID,
+        rfidSiswa: inputRFID,
+        foto: fotoSiswaReg,
+        ramu: '',
+        rakit: '',
+        terap: '',
+        kegiatan: '',
+        garuda: '',
+        tanggalInput: tanggalRegistrasi,
+        sumber: 'Registrasi Akun'
+      };
+      const idx = siswa.findIndex(function(s){
+        return String(s.username || '').trim() === username || String(s.rfid || s.rfidSiswa || '').trim() === inputRFID;
+      });
+      if(idx >= 0) siswa[idx] = Object.assign({}, siswa[idx], dataSiswa);
+      else siswa.push(dataSiswa);
+    }
+
+    historiRegistrasi.push({
+      id: idBaru,
+      username: username,
+      fullName: fullName,
+      role: role,
+      loginRFID: (role === 'guru' || role === 'bph') ? inputRFID : '',
+      rfidSiswa: role === 'siswa' ? inputRFID : '',
+      foto: fotoSiswaReg,
+      tanggalRegistrasi: tanggalRegistrasi
+    });
+
+    savePatchData();
+    refreshPatchViews();
+
+    ['regUser','regFullName','regPass','regLoginRFID','regFotoSiswa'].forEach(function(id){
+      const el = document.getElementById(id);
+      if(el) el.value = '';
+    });
+    alert(role === 'siswa' ? 'Registrasi siswa berhasil dan otomatis masuk ke Data Siswa' : 'Registrasi berhasil sebagai ' + role);
+  };
+
+  document.addEventListener('DOMContentLoaded', function(){
+    try{ updateRegisterRFIDPlaceholder(); }catch(e){}
+  });
+})();
+</script>
+
 </body>
 </html>
