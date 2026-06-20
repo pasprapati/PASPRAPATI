@@ -1257,14 +1257,101 @@ body:not(.auth-loading) #loadingOverlay{display:none!important;}
 }
 .btn-batal-edit-siswa{background:#64748b!important;color:white!important;}
 </style>
+
+<style id="pasprapati-loading-logo-only-final">
+/* LOADING FINAL: logo PASPRAPATI saja, tanpa teks */
+body.auth-loading{
+  visibility:visible!important;
+  background:linear-gradient(135deg,#069bd8,#064f6c)!important;
+  overflow:hidden!important;
+}
+body.auth-loading #loginPage,
+body.auth-loading #registerPage,
+body.auth-loading #appPage{
+  display:none!important;
+}
+body:not(.auth-loading) #loadingOverlay{
+  display:none!important;
+}
+#loadingOverlay{
+  position:fixed!important;
+  inset:0!important;
+  background:linear-gradient(135deg,#069bd8,#064f6c)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  z-index:999999!important;
+}
+#loadingOverlay .loading-logo{
+  width:190px!important;
+  height:190px!important;
+  object-fit:contain!important;
+  animation:pasprapatiLogoPulse 1.25s ease-in-out infinite!important;
+  filter:drop-shadow(0 14px 30px rgba(255,255,255,.28))!important;
+}
+#loadingOverlay .loader{
+  width:58px;
+  height:58px;
+  border:5px solid rgba(255,255,255,.25);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+@keyframes pasprapatiLogoPulse{
+  0%{transform:scale(.86);opacity:.72}
+  50%{transform:scale(1.12);opacity:1}
+  100%{transform:scale(.86);opacity:.72}
+}
+</style>
+
+
+<style id="pasprapati-logo-only-no-spinner-final">
+/* FINAL LOADING: logo saja, tanpa spinner dan tanpa teks */
+body.auth-loading{
+  visibility:visible!important;
+  background:linear-gradient(135deg,#069bd8,#064f6c)!important;
+  overflow:hidden!important;
+}
+body.auth-loading #loginPage,
+body.auth-loading #registerPage,
+body.auth-loading #appPage{
+  display:none!important;
+}
+body:not(.auth-loading) #loadingOverlay{
+  display:none!important;
+}
+#loadingOverlay{
+  position:fixed!important;
+  inset:0!important;
+  background:linear-gradient(135deg,#069bd8,#064f6c)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  z-index:999999!important;
+}
+#loadingOverlay .loader,
+#loadingOverlay .loader-box b{
+  display:none!important;
+}
+#loadingOverlay .loading-logo{
+  display:block!important;
+  width:190px!important;
+  height:190px!important;
+  object-fit:contain!important;
+  animation:pasprapatiLogoPulseOnly 1.25s ease-in-out infinite!important;
+  filter:drop-shadow(0 14px 30px rgba(255,255,255,.28))!important;
+}
+@keyframes pasprapatiLogoPulseOnly{
+  0%{transform:scale(.86);opacity:.72}
+  50%{transform:scale(1.12);opacity:1}
+  100%{transform:scale(.86);opacity:.72}
+}
+</style>
 </head>
 
 <body class="auth-loading">
 <div id="loadingOverlay">
-  <div class="loader-box">
-    <img src="pasprapatii.png" class="loading-logo" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div class=\"loader\"></div>')">
-    
-  </div>
+  <img src="pasprapatii.png" class="loading-logo">
 </div>
 
 
