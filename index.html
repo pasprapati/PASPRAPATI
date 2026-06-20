@@ -1224,9 +1224,49 @@ body.auth-loading{visibility:hidden;}
 @keyframes spin{to{transform:rotate(360deg);}}
 </style>
 
+
+<style id="pasprapati-final-bugfix-css">
+/* FINAL FIX: tidak blank putih saat refresh */
+body.auth-loading{
+  visibility:visible!important;
+  background:linear-gradient(135deg,#069bd8,#064f6c)!important;
+}
+body:not(.auth-loading) #loadingOverlay{display:none!important;}
+#loadingOverlay{
+  position:fixed;
+  inset:0;
+  background:linear-gradient(135deg,#069bd8,#064f6c);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:999999;
+}
+#loadingOverlay .loader-box{
+  text-align:center;
+  color:white;
+  font-family:Arial,sans-serif;
+}
+#loadingOverlay .loader{
+  width:58px;
+  height:58px;
+  border:5px solid rgba(255,255,255,.25);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+  margin:0 auto 14px;
+}
+.btn-batal-edit-siswa{background:#64748b!important;color:white!important;}
+</style>
 </head>
 
 <body class="auth-loading">
+<div id="loadingOverlay">
+  <div class="loader-box">
+    <div class="loader"></div>
+    <b>Memuat PASPRAPATI...</b>
+  </div>
+</div>
+
 
 <div class="popup" id="popupSuccess">
   <div class="popup-box">
@@ -5268,6 +5308,214 @@ window.addEventListener("load", async()=>{
     focusLoginRFID();
   }
 });
+</script>
+
+
+<script id="pasprapati-final-bugfix-js">
+/* ================= FINAL BUGFIX: REGISTRASI + DATA SISWA + REFRESH ================= */
+(function(){
+  function esc(v){
+    return String(v ?? "-").replace(/[&<>"]/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];
+    });
+  }
+  function arr(name){
+    try{ if(!Array.isArray(eval(name))) eval(name + "=[]"); }catch(e){}
+  }
+  function getNamaReg(h){return h.fullName || h.nama || h.name || "-";}
+  function getRFIDReg(h){return h.loginRFID || h.rfid || h.rfidSiswa || h.uid || "-";}
+  function getTanggalReg(h){return h.tanggal || h.waktu || h.createdAt || h.created || "-";}
+  function getNamaSiswa(s){return s.nama || s.fullName || s.namaSiswa || "-";}
+  function getJabatanSiswa(s){return s.jabatan || s.jabatanSiswa || "-";}
+  function getTingkatanSiswa(s){return s.tingkatan || s.tingkat || "-";}
+  function getRFIDSiswa(s){return s.rfid || s.loginRFID || s.rfidSiswa || s.uid || "-";}
+  function fileB64(id, oldVal){
+    return new Promise(function(resolve){
+      const input=document.getElementById(id);
+      const file=input && input.files ? input.files[0] : null;
+      if(!file) return resolve(oldVal || "");
+      const reader=new FileReader();
+      reader.onload=function(e){resolve(e.target.result || oldVal || "")};
+      reader.onerror=function(){resolve(oldVal || "")};
+      reader.readAsDataURL(file);
+    });
+  }
+  function saveEverything(){
+    try{ if(typeof saveUsers === "function") saveUsers(); }catch(e){}
+    try{ if(typeof saveAll === "function") saveAll(); }catch(e){}
+    try{ if(typeof saveLocalOnly === "function") saveLocalOnly(); }catch(e){}
+    try{ if(typeof saveCloudData === "function") saveCloudData(); }catch(e){}
+  }
+  function refreshViews(){
+    try{ renderRegisterHistoryPreview(); }catch(e){}
+    try{ renderHistoriRegistrasi(); }catch(e){}
+    try{ renderListSiswa(); }catch(e){}
+    try{ renderData(); }catch(e){}
+    try{ updateDashboard(); }catch(e){}
+    try{ refreshAllViews(); }catch(e){}
+  }
+
+  window.renderRegisterHistoryPreview = function(){
+    arr('historiRegistrasi');
+    const box=document.getElementById('registerHistoryPreview');
+    if(!box) return;
+    if(!historiRegistrasi.length){ box.innerHTML='Belum ada riwayat registrasi.'; return; }
+    const rows=historiRegistrasi.slice().reverse().map(function(h,ri){
+      const i=historiRegistrasi.length-1-ri;
+      return `<tr><td>${esc(h.username)}</td><td>${esc(getNamaReg(h))}</td><td>${esc(h.role)}</td><td>${esc(getRFIDReg(h))}</td><td>${esc(getTanggalReg(h))}</td><td><button type="button" class="btn-reg-delete" onclick="hapusRegistrasi(${i})">Hapus</button></td></tr>`;
+    }).join('');
+    box.innerHTML=`<div style="overflow:auto;"><table class="reg-history-table"><tr><th>Username</th><th>Nama</th><th>Role</th><th>RFID</th><th>Tanggal</th><th>Aksi</th></tr>${rows}</table></div>`;
+  };
+
+  window.renderHistoriRegistrasi = function(){
+    arr('historiRegistrasi');
+    const box=document.getElementById('tableHistoriRegistrasi');
+    if(!box) return;
+    if(!historiRegistrasi.length){ box.innerHTML='<div class="empty-status">Belum ada histori registrasi.</div>'; return; }
+    const rows=historiRegistrasi.slice().reverse().map(function(h,ri){
+      const i=historiRegistrasi.length-1-ri;
+      return `<tr><td>${esc(h.username)}</td><td>${esc(getNamaReg(h))}</td><td>${esc(h.role)}</td><td>${esc(getRFIDReg(h))}</td><td>${esc(getTanggalReg(h))}</td><td><button type="button" class="btn-reg-delete" onclick="hapusRegistrasi(${i})">Hapus</button></td></tr>`;
+    }).join('');
+    box.innerHTML=`<div style="overflow:auto;"><table class="reg-history-table"><tr><th>Username</th><th>Nama</th><th>Role</th><th>RFID</th><th>Tanggal</th><th>Aksi</th></tr>${rows}</table></div>`;
+  };
+
+  window.hapusRegistrasi = function(index){
+    arr('historiRegistrasi'); arr('users'); arr('siswa'); arr('dokumenSiswa');
+    index=Number(index);
+    if(index<0 || index>=historiRegistrasi.length){ alert('Data registrasi tidak ditemukan.'); return; }
+    const h=historiRegistrasi[index];
+    const username=String(h.username||'').trim();
+    const nama=String(getNamaReg(h)||'').trim();
+    const rfid=String(getRFIDReg(h)||'').trim();
+    if(!confirm(`Hapus registrasi ini?\n\nNama: ${nama || '-'}\nUsername: ${username || '-'}\nRole: ${h.role || '-'}`)) return;
+    historiRegistrasi.splice(index,1);
+    if(username) users=users.filter(function(u){return String(u.username||'').trim()!==username;});
+    siswa=siswa.filter(function(s){
+      const sUser=String(s.username||'').trim();
+      const sNama=String(getNamaSiswa(s)||'').trim().toLowerCase();
+      const sRfid=String(getRFIDSiswa(s)||'').trim();
+      return !((username && sUser===username) || (nama && sNama===nama.toLowerCase()) || (rfid && sRfid===rfid));
+    });
+    dokumenSiswa=dokumenSiswa.filter(function(d){
+      const dUser=String(d.username||'').trim();
+      const dNama=String(d.nama||d.fullName||'').trim().toLowerCase();
+      return !((username && dUser===username) || (nama && dNama===nama.toLowerCase()));
+    });
+    saveEverything(); refreshViews();
+    if(typeof showSuccess==='function') showSuccess('Data registrasi berhasil dihapus.'); else alert('Data registrasi berhasil dihapus.');
+  };
+
+  window.renderListSiswa = function(){
+    arr('siswa');
+    const box=document.getElementById('listDataSiswa');
+    if(!box) return;
+    if(!siswa.length){ box.innerHTML='<div class="empty-status">Belum ada data siswa.</div>'; return; }
+    const rows=siswa.map(function(s,i){
+      return `<tr>
+        <td>${s.foto ? `<img src="${s.foto}" style="width:58px;height:76px;object-fit:cover;border-radius:10px;border:1px solid #e2e8f0;">` : '-'}</td>
+        <td>${esc(getNamaSiswa(s))}</td><td>${esc(getJabatanSiswa(s))}</td><td>${esc(getTingkatanSiswa(s))}</td><td>${esc(getRFIDSiswa(s))}</td>
+        <td>${s.ramu ? `<a href="${s.ramu}" target="_blank">Lihat</a>` : '-'}</td>
+        <td>${s.rakit ? `<a href="${s.rakit}" target="_blank">Lihat</a>` : '-'}</td>
+        <td>${s.terap ? `<a href="${s.terap}" target="_blank">Lihat</a>` : '-'}</td>
+        <td>${s.kegiatan ? `<a href="${s.kegiatan}" target="_blank">Lihat</a>` : '-'}</td>
+        <td>${s.garuda ? `<a href="${s.garuda}" target="_blank">Lihat</a>` : '-'}</td>
+        <td><div class="action-buttons"><button type="button" class="btn-edit-siswa" onclick="editSiswa(${i})">Edit</button><button type="button" class="btn-hapus-siswa" onclick="hapusSiswa(${i})">Hapus</button></div></td>
+      </tr>`;
+    }).join('');
+    box.innerHTML=`<div style="overflow:auto;"><table><tr><th>Pas Foto</th><th>Nama</th><th>Jabatan</th><th>Tingkatan</th><th>RFID</th><th>Ramu</th><th>Rakit</th><th>Terap</th><th>Kegiatan</th><th>Garuda</th><th>Aksi</th></tr>${rows}</table></div>`;
+  };
+
+  window.editSiswa = function(index){
+    arr('siswa'); index=Number(index);
+    const s=siswa[index];
+    if(!s){ alert('Data siswa tidak ditemukan.'); return; }
+    document.getElementById('editSiswaId').value=index;
+    document.getElementById('namaSiswa').value=getNamaSiswa(s)==='-'?'':getNamaSiswa(s);
+    document.getElementById('jabatanSiswa').value=getJabatanSiswa(s)==='-'?'':getJabatanSiswa(s);
+    document.getElementById('tingkatanSiswa').value=getTingkatanSiswa(s)==='-'?'':getTingkatanSiswa(s);
+    document.getElementById('rfidSiswa').value=getRFIDSiswa(s)==='-'?'':getRFIDSiswa(s);
+    const btn=document.getElementById('btnSimpanSiswa'); if(btn) btn.innerText='Update Data Siswa';
+    const batal=document.getElementById('btnBatalEditSiswa'); if(batal) batal.classList.remove('hidden');
+    if(typeof showSuccess==='function') showSuccess('Mode edit data siswa aktif.');
+  };
+
+  window.batalEditSiswa = function(){
+    ['editSiswaId','namaSiswa','jabatanSiswa','rfidSiswa'].forEach(function(id){const el=document.getElementById(id); if(el) el.value='';});
+    const tingkat=document.getElementById('tingkatanSiswa'); if(tingkat) tingkat.value='';
+    ['fotoSiswa','sertRamu','sertRakit','sertTerap','sertKegiatan','sertGaruda'].forEach(function(id){const el=document.getElementById(id); if(el) el.value='';});
+    const btn=document.getElementById('btnSimpanSiswa'); if(btn) btn.innerText='Simpan Data Siswa';
+    const batal=document.getElementById('btnBatalEditSiswa'); if(batal) batal.classList.add('hidden');
+  };
+
+  window.simpanSiswa = async function(){
+    try{
+      arr('siswa');
+      const editEl=document.getElementById('editSiswaId');
+      const editIndex=editEl && editEl.value!=='' ? Number(editEl.value) : -1;
+      const old=editIndex>=0 ? siswa[editIndex] : null;
+      const nama=document.getElementById('namaSiswa').value.trim();
+      const jabatan=document.getElementById('jabatanSiswa').value.trim();
+      const tingkatan=document.getElementById('tingkatanSiswa').value;
+      const rfid=document.getElementById('rfidSiswa').value.trim();
+      if(!nama || !jabatan || !tingkatan || !rfid){ if(typeof showError==='function') showError('Data siswa belum lengkap'); else alert('Data siswa belum lengkap'); return; }
+      const rfidDipakai=siswa.some(function(s,i){return i!==editIndex && String(getRFIDSiswa(s)).trim()===rfid;});
+      if(rfidDipakai){ if(typeof showError==='function') showError('RFID siswa sudah terdaftar'); else alert('RFID siswa sudah terdaftar'); return; }
+      const data={
+        id: old && old.id ? old.id : Date.now(),
+        username: old && old.username ? old.username : '',
+        nama:nama,jabatan:jabatan,tingkatan:tingkatan,rfid:rfid,
+        foto: await fileB64('fotoSiswa', old && old.foto),
+        ramu: await fileB64('sertRamu', old && old.ramu),
+        rakit: await fileB64('sertRakit', old && old.rakit),
+        terap: await fileB64('sertTerap', old && old.terap),
+        kegiatan: await fileB64('sertKegiatan', old && old.kegiatan),
+        garuda: await fileB64('sertGaruda', old && old.garuda),
+        tanggalInput: old && old.tanggalInput ? old.tanggalInput : new Date().toLocaleString('id-ID'),
+        tanggalUpdate: editIndex>=0 ? new Date().toLocaleString('id-ID') : ''
+      };
+      if(editIndex>=0) siswa[editIndex]=data; else siswa.push(data);
+      saveEverything(); refreshViews(); window.batalEditSiswa();
+      if(typeof showSuccess==='function') showSuccess(editIndex>=0?'Data siswa berhasil diupdate':'Data siswa berhasil disimpan');
+    }catch(err){ console.error(err); if(typeof showError==='function') showError('Gagal menyimpan data siswa'); else alert('Gagal menyimpan data siswa'); }
+  };
+
+  window.hapusSiswa = function(index){
+    arr('siswa'); index=Number(index);
+    const s=siswa[index];
+    if(!s){ alert('Data siswa tidak ditemukan.'); return; }
+    if(!confirm(`Hapus data siswa ini?\n\nNama: ${getNamaSiswa(s)}\nRFID: ${getRFIDSiswa(s)}`)) return;
+    siswa.splice(index,1);
+    saveEverything(); refreshViews();
+    if(typeof showSuccess==='function') showSuccess('Data siswa berhasil dihapus.'); else alert('Data siswa berhasil dihapus.');
+  };
+
+  const oldRenderData = window.renderData;
+  window.renderData = function(){
+    try{ if(typeof oldRenderData==='function') oldRenderData(); }catch(e){ console.warn(e); }
+    arr('siswa');
+    const table=document.getElementById('tableSiswa');
+    if(table){
+      const rows=siswa.map(function(s,i){
+        return `<tr>
+          <td>${s.foto ? `<img src="${s.foto}" style="width:50px;height:65px;object-fit:cover;border-radius:8px;">` : '-'}</td>
+          <td>${esc(getNamaSiswa(s))}</td><td>${esc(getJabatanSiswa(s))}</td><td>${esc(getTingkatanSiswa(s))}</td><td>${esc(getRFIDSiswa(s))}</td>
+          <td>${s.ramu ? `<a href="${s.ramu}" target="_blank">Lihat</a>` : '-'}</td>
+          <td>${s.rakit ? `<a href="${s.rakit}" target="_blank">Lihat</a>` : '-'}</td>
+          <td>${s.terap ? `<a href="${s.terap}" target="_blank">Lihat</a>` : '-'}</td>
+          <td>${s.tanggalInput || '-'}</td>
+          <td><div class="action-buttons"><button type="button" class="btn-edit-siswa" onclick="showPage('siswaPage');editSiswa(${i})">Edit</button><button type="button" class="btn-hapus-siswa" onclick="hapusSiswa(${i})">Hapus</button></div></td>
+        </tr>`;
+      }).join('');
+      table.innerHTML=`<div style="overflow:auto;"><table><tr><th>Pas Foto</th><th>Nama</th><th>Jabatan</th><th>Tingkatan</th><th>RFID</th><th>Ramu</th><th>Rakit</th><th>Terap</th><th>Tanggal Input</th><th>Aksi</th></tr>${rows}</table></div>`;
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(function(){
+      try{ renderRegisterHistoryPreview(); renderHistoriRegistrasi(); renderListSiswa(); }catch(e){}
+    }, 400);
+  });
+})();
 </script>
 </body>
 </html>
